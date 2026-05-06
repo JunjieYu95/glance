@@ -5,6 +5,8 @@ __pycache__/
 .env
 glance/dashboard/index.html
 examples/demo-data/data.db
+examples/demo-data/data.db-shm
+examples/demo-data/data.db-wal
 build/
 dist/
 .pytest_cache/

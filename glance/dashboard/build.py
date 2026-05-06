@@ -139,7 +139,7 @@ DEFAULT_TEMPLATE = """<!doctype html>
   </style>
 </head>
 <body>
-  <h1>Personal Routine</h1>
+  <h1>glance</h1>
   <div class="built-at">Built {built_at}</div>
   <div class="grid">{panels}</div>
 </body>
