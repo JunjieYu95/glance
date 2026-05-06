@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta
-from typing import Iterable, Optional
+from typing import Optional
 
 try:
     from zoneinfo import ZoneInfo

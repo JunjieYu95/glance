@@ -33,14 +33,14 @@ def seed() -> None:
     now = datetime.now()
     with get_connection() as conn:
         conn.execute("DELETE FROM mood_entries")
-        for i, (delta_h, score, label, raw) in enumerate([
+        for delta_h, score, label, raw in [
             (0.5, 8, "happy", "feeling great after the morning run"),
             (3, 7, "focused", "deep work on the auth module"),
             (5, 6, "tired", "sluggish after lunch"),
             (8, 7, "calm", "wrapped up the day, relaxed"),
             (26, 5, "stressed", "deadline pressure building"),
             (50, 8, "happy", "good chat with friends"),
-        ]):
+        ]:
             ts = now - timedelta(hours=delta_h)
             conn.execute(
                 "INSERT INTO mood_entries (created_at, mood_score, mood_label, note, raw_text) "

@@ -1,8 +1,8 @@
 from .google_oauth import (
-    AuthSetupError,
     CONFIG_DIR,
     CREDENTIALS_PATH,
     TOKEN_PATH,
+    AuthSetupError,
     bootstrap_interactive,
     get_calendar_service,
 )

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sqlite3
 import sys
 import tempfile
 from pathlib import Path
@@ -12,7 +11,6 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT))
 
 from glance.core.storage import apply_all_migrations, get_connection
-from glance.core.storage.db import get_db_path
 
 
 def _set_home(tmp):

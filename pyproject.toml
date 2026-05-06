@@ -74,8 +74,16 @@ line-length = 100
 target-version = "py39"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP"]
+select = ["E", "F", "W", "I", "B"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"glance/skills/scaffold_component/templates/**" = ["F", "E", "W"]
+# Component scripts intentionally bootstrap sys.path so they can run standalone
+# (the dashboard subprocesses each stats.py). The deferred imports trigger
+# E402; the bootstrap shuffles import order and trips I001.
+"glance/skills/*/scripts/*.py" = ["E402", "I001"]
+"glance/skills/*/tests/*.py" = ["E402", "I001"]
+"glance/core/*/tests/*.py" = ["E402", "I001"]
+"glance/dashboard/build.py" = ["E402", "I001"]
+"examples/**/*.py" = ["E402", "I001"]
+"glance/skills/scaffold_component/templates/**" = ["F", "E", "W", "I", "B", "UP"]

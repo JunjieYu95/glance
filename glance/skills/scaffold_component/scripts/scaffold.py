@@ -22,7 +22,6 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
-from typing import Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
