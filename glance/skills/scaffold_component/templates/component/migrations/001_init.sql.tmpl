@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS {{name}}_entries (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')){{fields_sql}}
+);

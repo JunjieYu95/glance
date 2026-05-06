@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+glance/dashboard/index.html
+examples/demo-data/data.db
+build/
+dist/
+.pytest_cache/
+.DS_Store

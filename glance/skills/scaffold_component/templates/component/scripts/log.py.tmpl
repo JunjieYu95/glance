@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""{{name}}.log — auto-generated logger."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from glance.core.storage import get_connection
+
+FIELDS = {{fields_python_list}}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Log a {{title}} entry.")
+    for fname, ftype in FIELDS:
+        kwargs = {"required": False}
+        if ftype == "int":
+            kwargs["type"] = int
+        elif ftype == "float":
+            kwargs["type"] = float
+        parser.add_argument(f"--{fname.replace('_', '-')}", **kwargs)
+    if not any(fn == "note" for fn, _ in FIELDS):
+        parser.add_argument("--note", help="Free-form note")
+    args = parser.parse_args()
+
+    cols = []
+    vals = []
+    for fname, _ in FIELDS:
+        v = getattr(args, fname.replace("-", "_"))
+        if v is not None:
+            cols.append(fname)
+            vals.append(v)
+    if not any(fn == "note" for fn, _ in FIELDS) and getattr(args, "note", None):
+        cols.append("note")
+        vals.append(args.note)
+
+    if not cols:
+        parser.error("Provide at least one field.")
+
+    placeholders = ", ".join("?" * len(cols))
+    sql = f"INSERT INTO {{name}}_entries ({', '.join(cols)}) VALUES ({placeholders})"
+    with get_connection() as conn:
+        cur = conn.execute(sql, vals)
+        conn.commit()
+        rid = cur.lastrowid
+
+    print(json.dumps({"ok": True, "id": rid, "fields": dict(zip(cols, vals))}, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

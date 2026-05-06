@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""{{name}}.notify — invoked by the openclaw cron schedule.
+
+This script is intentionally minimal: it prints the notification text on
+stdout. The openclaw cron runner is responsible for delivering it (chat
+message / OS notification / etc.). Components do not roll their own notifier.
+"""
+
+from __future__ import annotations
+
+import json
+
+NOTIFICATION_TEXT = {{notification_text!r}}
+
+
+def main() -> int:
+    print(json.dumps({"component": "{{name}}", "text": NOTIFICATION_TEXT}, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

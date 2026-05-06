@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glance"
+version = "0.1.0"
+description = "All-in-one personal tracker (diary, mood, reminders, MIT) as a single openclaw skill bundle. One dashboard, chat-driven, scaffolder for new components."
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Junjie Yu", email = "junjieyu1001@gmail.com"}]
+requires-python = ">=3.9"
+keywords = ["openclaw", "personal", "routine", "diary", "tracker", "dashboard", "mood", "reminders"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Scheduling",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "google-auth>=2.20",
+    "google-auth-oauthlib>=1.0",
+    "google-api-python-client>=2.100",
+    "tomli>=2.0; python_version<'3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.5",
+    "build>=1.0",
+]
+
+[project.scripts]
+glance = "glance.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/JunjieYu95/glance"
+Repository = "https://github.com/JunjieYu95/glance"
+Issues = "https://github.com/JunjieYu95/glance/issues"
+Changelog = "https://github.com/JunjieYu95/glance/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["glance*"]
+exclude = ["glance.*.tests*", "glance.*.tests.*"]
+
+[tool.setuptools.package-data]
+glance = [
+    "py.typed",
+    "skills/**/*.toml",
+    "skills/**/*.md",
+    "skills/**/*.sql",
+    "skills/**/*.tmpl",
+    "skills/**/templates/**/*",
+    "dashboard/*.html",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["glance"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"glance/skills/scaffold_component/templates/**" = ["F", "E", "W"]

@@ -1,0 +1,14 @@
+[component]
+name        = "{{name}}"
+title       = "{{title}}"
+version     = "0.1.0"
+description = "{{description}}"
+
+[panel]
+enabled         = true
+order           = {{order}}
+freshness_hours = {{freshness_hours}}
+
+[storage]
+tables = ["{{name}}_entries"]
+{{cron_block}}

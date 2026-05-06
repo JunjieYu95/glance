@@ -1,0 +1,27 @@
+"""{{name}} smoke test."""
+
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
+
+def test_stats_runs_on_empty_db():
+    with tempfile.TemporaryDirectory() as tmp:
+        env = {**os.environ, "GLANCE_HOME": tmp}
+        subprocess.check_call([
+            sys.executable, "-m", "glance.core.storage.migrations",
+            str(REPO_ROOT / "glance" / "skills"),
+        ], cwd=REPO_ROOT, env=env)
+        out = subprocess.check_output([
+            sys.executable, str(Path(__file__).resolve().parents[1] / "scripts" / "stats.py"),
+        ], env=env)
+        assert b"status" in out
+
+
+if __name__ == "__main__":
+    test_stats_runs_on_empty_db()
+    print("ok  test_stats_runs_on_empty_db")
