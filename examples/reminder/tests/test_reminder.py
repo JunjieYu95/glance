@@ -9,7 +9,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 
 
@@ -17,7 +17,7 @@ def _setup(tmp):
     env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
     subprocess.check_call(
         [sys.executable, "-m", "glance.core.storage.migrations",
-         str(REPO_ROOT / "glance" / "skills")],
+         str(REPO_ROOT / "examples" / "reminder")],
         env=env, cwd=REPO_ROOT,
     )
     return env

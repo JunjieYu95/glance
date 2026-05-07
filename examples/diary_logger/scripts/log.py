@@ -12,16 +12,17 @@ import sys
 from pathlib import Path
 
 # Allow running as a script: `./scripts/log.py ...`
-REPO_ROOT = Path(__file__).resolve().parents[4]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+_SCRIPTS = Path(__file__).resolve().parent
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
 
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover
     import tomli as tomllib  # type: ignore
 
-from glance.skills.diary_logger.scripts import _calendar, _time_parser
+import _calendar
+import _time_parser
 
 
 def _load_component_config() -> dict:

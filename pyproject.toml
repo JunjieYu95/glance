@@ -64,6 +64,14 @@ glance = [
     "skills/**/templates/**/*",
     "dashboard/*.html",
 ]
+examples = [
+    "**/*.toml",
+    "**/*.md",
+    "**/*.sql",
+    "**/*.py",
+    "**/*.tmpl",
+    "**/templates/**/*",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["glance"]

@@ -8,9 +8,9 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+_SCRIPTS = Path(__file__).resolve().parent
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
 
 try:
     import tomllib
@@ -22,7 +22,7 @@ try:
 except ImportError:  # pragma: no cover
     ZoneInfo = None  # type: ignore
 
-from glance.skills.diary_logger.scripts import _calendar
+import _calendar
 
 
 def _load_cfg() -> dict:

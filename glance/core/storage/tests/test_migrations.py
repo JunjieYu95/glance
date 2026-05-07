@@ -20,8 +20,8 @@ def _set_home(tmp):
 def test_apply_creates_tables():
     with tempfile.TemporaryDirectory() as tmp:
         _set_home(tmp)
-        applied = apply_all_migrations(REPO_ROOT / "glance" / "skills")
-        assert "mood" in applied and "reminder" in applied and "mit" in applied
+        applied = apply_all_migrations(REPO_ROOT / "examples")
+        assert "mood" in applied and "reminder" in applied and "mit" in applied and "diary_logger" in applied
         with get_connection() as conn:
             tables = {r[0] for r in conn.execute(
                 "SELECT name FROM sqlite_master WHERE type='table'")}
@@ -34,8 +34,8 @@ def test_apply_creates_tables():
 def test_idempotent():
     with tempfile.TemporaryDirectory() as tmp:
         _set_home(tmp)
-        first = apply_all_migrations(REPO_ROOT / "glance" / "skills")
-        second = apply_all_migrations(REPO_ROOT / "glance" / "skills")
+        first = apply_all_migrations(REPO_ROOT / "examples")
+        second = apply_all_migrations(REPO_ROOT / "examples")
         assert first  # something happened the first time
         assert second == {}  # nothing the second time
 
