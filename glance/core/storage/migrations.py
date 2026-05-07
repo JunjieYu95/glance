@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import sqlite3
 from pathlib import Path
+
 from .db import get_connection
 
 _BOOTSTRAP_SQL = """
@@ -78,6 +79,11 @@ def apply_all_migrations(skills_root: Path, user_root: Path | None = None) -> di
     results: dict[str, list[str]] = {}
     roots = [skills_root, user_root] if user_root.is_dir() else [skills_root]
     for root in roots:
+        # Support passing a single component directory directly.
+        if (root / "component.toml").is_file():
+            applied = apply_component_migrations(root.name, root / "migrations")
+            if applied:
+                results[root.name] = applied
         for child in sorted(p for p in root.iterdir() if p.is_dir()):
             if (child / "component.toml").is_file():
                 applied = apply_component_migrations(child.name, child / "migrations")

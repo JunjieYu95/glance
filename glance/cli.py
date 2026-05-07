@@ -83,7 +83,7 @@ def cmd_setup(argv: list[str]) -> int:
     from glance.core.storage.db import GLANCE_HOME
 
     p = argparse.ArgumentParser(prog="glance setup")
-    args = p.parse_args(argv)
+    p.parse_args(argv)
 
     print("Running migrations...")
     applied = apply_all_migrations(SKILLS_ROOT)
@@ -183,7 +183,6 @@ def cmd_scaffold(argv: list[str]) -> int:
 
 def cmd_list(argv: list[str]) -> int:
     from glance.core.registry import discover_components
-    from glance.core.storage.db import GLANCE_HOME
 
     components = [
         {
@@ -206,8 +205,8 @@ def cmd_dashboard(argv: list[str]) -> int:
     if sub == "build":
         return _forward("glance.dashboard.build", rest)
     if sub == "open":
-        from glance.dashboard import build as dash_build
         from glance.core.storage.db import GLANCE_HOME
+        from glance.dashboard import build as dash_build
         out = GLANCE_HOME / "dashboard" / "index.html"
         result = dash_build.build(out)
         webbrowser.open(f"file://{result['output']}")

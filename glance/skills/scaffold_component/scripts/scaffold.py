@@ -28,8 +28,8 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from glance.core.storage import apply_component_migrations  # noqa: E402
 from glance.core import openclaw_cron  # noqa: E402
+from glance.core.storage import apply_component_migrations  # noqa: E402
 
 GLANCE_HOME = Path(os.environ.get("GLANCE_HOME", Path.home() / ".glance"))
 SKILLS_ROOT = GLANCE_HOME / "components"

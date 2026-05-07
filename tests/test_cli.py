@@ -1,8 +1,6 @@
 """Smoke tests for glance CLI."""
 import json
 import sys
-import os
-from pathlib import Path
 
 
 def test_glance_version():
@@ -20,8 +18,9 @@ def test_glance_list_no_components(tmp_path, monkeypatch):
     """list should return empty when no components exist."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
 
-    from glance.cli import cmd_list
     import io
+
+    from glance.cli import cmd_list
     saved = sys.stdout
     sys.stdout = io.StringIO()
     try:
