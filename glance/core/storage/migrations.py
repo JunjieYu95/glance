@@ -7,10 +7,9 @@ lexicographic order. Applied state is tracked in `_migrations`, keyed by
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
-from typing import Iterable
-
 from .db import get_connection
 
 _BOOTSTRAP_SQL = """
@@ -71,27 +70,20 @@ def apply_component_migrations(component: str, migrations_dir: Path, conn: sqlit
             conn.close()
 
 
-def apply_all_migrations(skills_root: Path, components: Iterable[str] | None = None) -> dict[str, list[str]]:
-    """Walk skills_root and apply every component's migrations. Idempotent."""
-    conn = get_connection()
-    try:
-        _bootstrap(conn)
-        results: dict[str, list[str]] = {}
-        component_dirs = (
-            [skills_root / c for c in components]
-            if components is not None
-            else sorted(p for p in skills_root.iterdir() if p.is_dir())
-        )
-        for comp_dir in component_dirs:
-            if not comp_dir.is_dir():
-                continue
-            name = comp_dir.name
-            applied = apply_component_migrations(name, comp_dir / "migrations", conn=conn)
-            if applied:
-                results[name] = applied
-        return results
-    finally:
-        conn.close()
+def apply_all_migrations(skills_root: Path, user_root: Path | None = None) -> dict[str, list[str]]:
+    """Apply migrations from both the skill-internal and user component dirs."""
+    if user_root is None:
+        user_root = Path(os.environ.get("GLANCE_HOME", Path.home() / ".glance")) / "components"
+
+    results: dict[str, list[str]] = {}
+    roots = [skills_root, user_root] if user_root.is_dir() else [skills_root]
+    for root in roots:
+        for child in sorted(p for p in root.iterdir() if p.is_dir()):
+            if (child / "component.toml").is_file():
+                applied = apply_component_migrations(child.name, child / "migrations")
+                if applied:
+                    results[child.name] = applied
+    return results
 
 
 if __name__ == "__main__":

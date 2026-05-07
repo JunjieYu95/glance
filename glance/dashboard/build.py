@@ -147,11 +147,17 @@ DEFAULT_TEMPLATE = """<!doctype html>
 """
 
 
-def build(output_path: Path, run_migrations: bool = True) -> dict:
+def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
+    from glance.core.storage.db import GLANCE_HOME
+
+    if output_path is None:
+        output_path = GLANCE_HOME / "dashboard" / "index.html"
+
     if run_migrations:
         apply_all_migrations(SKILLS_ROOT)
 
-    components = discover_components(SKILLS_ROOT, panel_only=True)
+    components = discover_components(panel_only=True)
+
     panels_html: list[str] = []
     statuses: dict[str, str] = {}
     for comp in components:
@@ -159,21 +165,31 @@ def build(output_path: Path, run_migrations: bool = True) -> dict:
         statuses[comp.name] = payload.get("status", "unknown")
         panels_html.append(_render_panel(comp, payload))
 
-    template = TEMPLATE_PATH.read_text(encoding="utf-8") if TEMPLATE_PATH.is_file() else DEFAULT_TEMPLATE
-    html_out = template.replace("{built_at}", datetime.now().strftime("%Y-%m-%d %H:%M"))
+    template = (
+        TEMPLATE_PATH.read_text(encoding="utf-8")
+        if TEMPLATE_PATH.is_file()
+        else DEFAULT_TEMPLATE
+    )
+    html_out = template.replace(
+        "{built_at}", datetime.now().strftime("%Y-%m-%d %H:%M")
+    )
     html_out = html_out.replace("{panels}", "\n".join(panels_html))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html_out, encoding="utf-8")
-    return {"output": str(output_path), "components": list(statuses.keys()), "statuses": statuses}
+    return {
+        "output": str(output_path),
+        "components": list(statuses.keys()),
+        "statuses": statuses,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--out", default=str(REPO_ROOT / "glance" / "dashboard" / "index.html"))
+    p.add_argument("--out", default=None)
     p.add_argument("--no-migrate", action="store_true")
     args = p.parse_args(argv)
-    result = build(Path(args.out), run_migrations=not args.no_migrate)
+    result = build(Path(args.out) if args.out else None, run_migrations=not args.no_migrate)
     print(json.dumps(result, indent=2))
     return 0
 
