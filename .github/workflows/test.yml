@@ -32,8 +32,16 @@ jobs:
         run: |
           glance version
           glance list
+      - name: Validate SKILL.md files
+        run: |
+          test -f SKILL.md
+          test -f examples/mood/SKILL.md
+          test -f examples/reminder/SKILL.md
+          test -f examples/mit/SKILL.md
+          test -f examples/diary_logger/SKILL.md
+          test -f glance/skills/scaffold_component/SKILL.md
       - name: Tests
-        run: pytest glance/ -v
+        run: pytest glance/ examples/ -v
       - name: Demo + dashboard build
         env:
           GLANCE_HOME: ${{ github.workspace }}/examples/demo-data
