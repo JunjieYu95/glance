@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glance"
-version = "0.1.0"
+version = "0.2.0"
 description = "All-in-one personal tracker (diary, mood, reminders, MIT) as a single openclaw skill bundle. One dashboard, chat-driven, scaffolder for new components."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -28,9 +28,6 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "google-auth>=2.20",
-    "google-auth-oauthlib>=1.0",
-    "google-api-python-client>=2.100",
     "tomli>=2.0; python_version<'3.11'",
 ]
 
@@ -39,6 +36,11 @@ dev = [
     "pytest>=8",
     "ruff>=0.5",
     "build>=1.0",
+]
+diary = [
+    "google-auth>=2.20",
+    "google-auth-oauthlib>=1.0",
+    "google-api-python-client>=2.100",
 ]
 
 [project.scripts]
