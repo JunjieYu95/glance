@@ -1,0 +1,53 @@
+<h2>SKILL.md Design: Handbook + Dispatcher Pattern</h2>
+<p class="subtitle">Master SKILL.md routes intent to the right sub-skill</p>
+
+<div class="mockup">
+  <div class="mockup-header">Master SKILL.md — the "handbook"</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.7;text-align:left">
+## What glance is<br>
+A personal tracker framework: mood, reminders, diary, MIT, dashboard.<br>
+Scaffold new trackers in one command.<br>
+<br>
+## Routing user intent<br>
+| User says | Route to | Script to run |<br>
+|---|---|---|<br>
+| "log mood" / "how am I feeling" | examples/mood/SKILL.md | scripts/log.py |<br>
+| "remind me" / "add reminder" | examples/reminder/SKILL.md | scripts/log.py |<br>
+| "what's my MIT" | examples/mit/SKILL.md | scripts/today_brief.py |<br>
+| "log diary" / "track time" | examples/diary_logger/SKILL.md | scripts/log.py |<br>
+| "build dashboard" | → dashboard/build.py | |<br>
+| "create tracker for X" | → scaffold_component/SKILL.md | |<br>
+<br>
+## For each route<br>
+1. First read [sub-skill SKILL.md] for full instructions<br>
+2. Then call the script with the arguments the user gave<br>
+3. Report back what happened
+  </div>
+</div>
+
+<div class="section">
+  <h3>Flow</h3>
+  <div class="mockup" style="text-align:center;padding:16px">
+    <p><b>User intent</b> <span style="font-size:20px">→</span> <b>Master SKILL.md</b> <span style="font-size:20px">→</span> <b>Route to sub-skill</b> <span style="font-size:20px">→</span> <b>Call script</b></p>
+    <p style="color:var(--muted);font-size:13px;margin-top:8px">Example: "remind me to renew passport" → master sees "remind" → routes to examples/reminder/SKILL.md → agent reads it → runs scripts/log.py --add --title "renew passport"</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Per-example SKILL.md (e.g. examples/mood/SKILL.md)</h3>
+  <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.7;text-align:left">
+---<br>
+name: glance-mood<br>
+description: Hourly mood check-ins via chat<br>
+---<br>
+<br>
+## Usage<br>
+glance mood log --raw "I feel great" --score 8<br>
+glance mood stats<br>
+<br>
+## Scripts<br>
+scripts/log.py --raw "..." [--score 1-10]<br>
+scripts/stats.py &nbsp; ← called by dashboard<br>
+  </div>
+  <p style="color:var(--muted);font-size:12px;margin-top:8px">Per-example SKILL.md files are <b>optional companion skills</b> — user can publish them on ClawHub as standalone skills too</p>
+</div>

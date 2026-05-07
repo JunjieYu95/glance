@@ -1,0 +1,4 @@
+{"type":"server-started","port":50601,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:50601","screen_dir":"/Users/junjieyu/glance/.superpowers/brainstorm/70163-1778118542/content","state_dir":"/Users/junjieyu/glance/.superpowers/brainstorm/70163-1778118542/state"}
+{"type":"screen-added","file":"/Users/junjieyu/glance/.superpowers/brainstorm/70163-1778118542/content/refined-arch.html"}
+{"type":"screen-added","file":"/Users/junjieyu/glance/.superpowers/brainstorm/70163-1778118542/content/skill-design.html"}
+{"type":"server-stopped","reason":"idle timeout"}

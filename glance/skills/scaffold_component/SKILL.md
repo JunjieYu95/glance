@@ -1,60 +1,85 @@
 ---
-name: scaffold_component
-description: Create a new tracking component end-to-end. Triggered when the user says "I want to track <X>", "add a new component", "scaffold a new tracker", "新增一个 <X> 记录", or any request to start tracking something not already covered.
+name: glance-scaffold
+description: >
+  Create new personal trackers from natural language. Infer fields, cron,
+  and notification text from the user's description. Propose before building.
 ---
 
-# Scaffold Component
+## Flow: Intent → Propose → Confirm → Scaffold
 
-The meta-skill. Creates a new tracking component (folder + skill + migrations +
-dashboard panel + optional cron) in one shot. **No central file edits required**
-— the new component is wired in by virtue of existing on disk.
+### 1. Analyze the user's goal
 
-## When to invoke
+When the user says something like "I want to track my workouts" or
+"build a reading habit," infer:
 
-User says any of:
-- "I want to start tracking my coffee intake"
-- "add a sleep tracker"
-- "scaffold a new component called <X>"
-- "新增一个 <X> 记录器"
+- **name**: snake_case, lowercase. E.g. "workout", "reading", "water_intake".
+- **fields**: name:type pairs. Common types: text, int, float, bool.
+  - "track workouts with type and duration" → type:text, duration_minutes:int
+  - "log water in ml" → amount_ml:int
+  - "reading habit with book title and pages" → book_title:text, pages_read:int
+  - Always add a `note TEXT` field by default for free-form comments.
+- **cron**: when should the user be prompted?
+  - Morning habit: "0 8 * * *"
+  - Evening habit: "0 21 * * *"
+  - Multiple times: "0 9,14,21 * * *"
+  - Weekly: "0 9 * * 1" (Monday)
+- **notification**: what prompt text to send?
+  - "Time to log your workout?"
+  - "How many pages did you read today?"
+  - "Log your water intake"
 
-## What it does
+### 2. Propose a plan
 
-1. Asks for: `name` (snake_case folder name), `title` (panel title), optional
-   `cron_schedule` + `notification_text`, optional `fields` (list of typed
-   columns the user wants to record).
-2. Copies `templates/component/` → `glance/skills/<name>/`.
-3. Substitutes `{{name}}`, `{{title}}`, `{{fields_sql}}` in the template.
-4. Runs `core.storage.migrations.apply_component_migrations` for the new
-   component → tables exist in `~/.glance/data.db`.
-5. If `cron_schedule` is set, registers an openclaw cron task pointing at
-   `skills/<name>/scripts/notify.py`.
-6. Triggers a dashboard rebuild so the new panel appears.
+List what will be created. Do NOT run any commands yet. Format:
 
-## Examples
+> "I'll create a tracker called `workout` with fields:
+> - type (text)
+> - duration_minutes (int)
+> - note (text)
+>
+> Cron: daily at 9pm. Notification: 'Time to log your workout?'
+>
+> Dashboard will show a Workout panel. Sound good?"
+
+Wait for the user to confirm or revise. If they want changes, revise the plan
+and ask again.
+
+### 3. Scaffold
+
+Once confirmed, run for each tracker:
 
 ```bash
-./scripts/scaffold.py \
-  --name coffee_intake \
-  --title "Coffee" \
-  --field "shots:int" \
-  --field "notes:text" \
-  --cron "0 9 * * *" \
-  --notify "How much coffee did you have?"
+glance scaffold \
+  --name <name> \
+  --title "<Title>" \
+  --field <name:type> ... \
+  --cron "<expr>" \
+  --notify "<text>" \
+  --cron-tz "America/Denver"
 ```
 
-After this runs, the user can immediately say "log coffee 2 shots" and the
-new component handles it, AND the next dashboard build shows a Coffee panel.
+Ask the user for their timezone if not specified (default: America/Denver).
 
-## Files emitted
+The scaffold command:
+- Creates `<name>/` under `~/.glance/components/`
+- Renders component.toml, migrations, log.py, stats.py from templates
+- Runs migrations (creates tables in ~/.glance/data.db)
+- Registers cron job in openclaw (if `~/.glance/openclaw.toml` exists)
+- Rebuilds the dashboard
 
-```
-skills/<name>/
-├── component.toml
-├── SKILL.md
-├── migrations/001_init.sql       # CREATE TABLE <name>_entries (...)
-├── scripts/
-│   ├── log.py                    # generic field-driven logger
-│   ├── stats.py                  # generic count + recent rows
-│   └── notify.py                 # only if cron was set
-└── tests/test_smoke.py
-```
+### 4. After scaffold
+
+Tell the user what was created and how to use it:
+
+> "Done! Your workout tracker is ready:
+> - Log: `glance workout log --type run --duration-minutes 30`
+> - Dashboard: `glance dashboard open`
+> - You'll get a daily prompt at 9pm."
+
+## Reference examples
+
+Study these examples for patterns:
+- `examples/mood/` — simple text+score tracker
+- `examples/reminder/` — add/done/list with due dates
+- `examples/mit/` — one-entry-per-day pattern
+- `examples/diary_logger/` — time-tracking with external API

@@ -1,0 +1,56 @@
+<h2>Current Project Architecture</h2>
+<p class="subtitle">glance v0.1.0 — what ships, what's missing for the open-source skill goal</p>
+
+<div class="section">
+  <h3>What already works</h3>
+  <div class="mockup">
+    <div class="mockup-header">Current File Tree</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.8">
+      glance/<br>
+      ├── <b>pyproject.toml</b> &nbsp; <span style="color:var(--muted)">pip-installable package</span><br>
+      ├── <b>install.sh</b> &nbsp; <span style="color:var(--muted)">clone-only setup</span><br>
+      ├── <b>glance/</b><br>
+      │&nbsp; ├── cli.py &nbsp; <span style="color:var(--muted)">CLI entry point</span><br>
+      │&nbsp; ├── core/<br>
+      │&nbsp; │&nbsp; ├── auth/ &nbsp; <span style="color:var(--muted)">Google OAuth</span><br>
+      │&nbsp; │&nbsp; ├── storage/ &nbsp; <span style="color:var(--muted)">SQLite + migrations</span><br>
+      │&nbsp; │&nbsp; ├── registry/ &nbsp; <span style="color:var(--muted)">discover components</span><br>
+      │&nbsp; │&nbsp; └── openclaw_cron.py &nbsp; <span style="color:var(--muted)">cron job registry</span><br>
+      │&nbsp; ├── skills/ &nbsp; <span style="color:var(--muted)">5 built-in trackers</span><br>
+      │&nbsp; └── dashboard/build.py &nbsp; <span style="color:var(--muted)">static HTML renderer</span><br>
+      ├── tests/ (13 tests)<br>
+      ├── CI (pytest 3.9–3.12)<br>
+      └── docs/ &nbsp; <span style="color:var(--muted)">component contract</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>What's missing for install-as-a-skill</h3>
+  <div class="cards" data-multiselect>
+    <div class="card" data-choice="no-skill-wrapper" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>No OpenCode SKILL.md wrapper</h3>
+        <p>Components have openclaw SKILL.md files, but there's no top-level OpenCode skill definition to wire everything together</p>
+      </div>
+    </div>
+    <div class="card" data-choice="no-one-shot-install" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>No one-shot install flow</h3>
+        <p>Users must clone the repo, run install.sh, configure openclaw.toml manually — no pipx/pip install + auto-configure</p>
+      </div>
+    </div>
+    <div class="card" data-choice="no-skeleton" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>No predefined skeleton</h3>
+        <p>No template/project generator for third-party users to start from scratch with their own dashboard + cron setup</p>
+      </div>
+    </div>
+    <div class="card" data-choice="openclaw-locked" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Hardcoded to openclaw</h3>
+        <p>Cron registration, notification paths, and SKILL.md formats are tightly coupled to openclaw's APIs</p>
+      </div>
+    </div>
+  </div>
+</div>

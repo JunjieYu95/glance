@@ -1,0 +1,80 @@
+<h2>Two Approaches for glance as a ClawHub Skill</h2>
+<p class="subtitle">Based on: Pure ClawHub install · Master + per-component SKILL.md · CLI wizard + agent fallback</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Flat Skill Bundle</h3>
+      <p>One glance/ folder published as one ClawHub skill. Top-level SKILL.md documents all CLI commands. Components live as subdirectories (diary_logger/, mood/, etc.) each with their own SKILL.md as optional companion skills. <code>clawhub install glance</code> gets everything.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Scaffold-as-Entrypoint</h3>
+      <p>The published skill is just the scaffold framework + dashboard build. No built-in trackers shipped. Users run <code>clawhub install glance</code>, then the agent scaffolds each tracker on demand via <code>glance scaffold</code>. Built-in components become publishable templates.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Approach A: Flat Skill Bundle (Recommended)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Folder structure after clavhub install glance</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8;text-align:left">
+      ~/.openclaw/skills/glance/<br>
+      ├── <b>SKILL.md</b> &nbsp; <span style="color:var(--muted)">← ALL CLI usage documented here</span><br>
+      ├── install.sh &nbsp; <span style="color:var(--muted)">← pip install + glance setup</span><br>
+      ├── diary_logger/<br>
+      │&nbsp; ├── SKILL.md &nbsp; <span style="color:var(--muted)">optional companion skill</span><br>
+      │&nbsp; └── scripts/...<br>
+      ├── mood/<br>
+      │&nbsp; ├── SKILL.md<br>
+      │&nbsp; └── scripts/...<br>
+      ├── reminder/...<br>
+      ├── mit/...<br>
+      └── scaffold_component/...<br>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros"><h4>Pros</h4><ul>
+      <li>One install, everything works</li>
+      <li>Built-in trackers ready to use immediately</li>
+      <li>Per-component SKILL.md for users who want just one tracker</li>
+      <li>Minimal changes from current structure</li>
+    </ul></div>
+    <div class="cons"><h4>Cons</h4><ul>
+      <li>Larger bundle size (scripts + migrations for all 4 trackers)</li>
+      <li>Users who only want mood tracking still download everything</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Approach B: Scaffold-as-Entrypoint</h3>
+  <div class="mockup">
+    <div class="mockup-header">Published skill = framework only</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8;text-align:left">
+      ~/.openclaw/skills/glance/<br>
+      ├── SKILL.md &nbsp; <span style="color:var(--muted)">← glue: pip install + scaffold usage</span><br>
+      ├── install.sh<br>
+      ├── scaffold_component/<br>
+      │&nbsp; ├── SKILL.md<br>
+      │&nbsp; └── templates/...<br>
+      └── dashboard/build.py<br>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros"><h4>Pros</h4><ul>
+      <li>Minimal bundle — just the framework</li>
+      <li>Users choose exactly which trackers they want</li>
+      <li>Built-in trackers can be installed as separate ClawHub skills</li>
+    </ul></div>
+    <div class="cons"><h4>Cons</h4><ul>
+      <li>More steps: install glance, then scaffold each tracker</li>
+      <li>Scaffold requires pip-dependencies (the glance CLI)</li>
+      <li>Users lose the "everything just works" first experience</li>
+    </ul></div>
+  </div>
+</div>

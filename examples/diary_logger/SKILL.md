@@ -1,44 +1,43 @@
 ---
-name: diary_logger
-description: Log time-tracked activities to your Google Calendar. Triggered when the user says "log diary", "log <activity>", "记录日志", or any direct mention of recording time/activities.
+name: glance-diary
+description: Time-tracked activity logging to Google Calendar. English + Chinese time parsing.
 ---
+## Auth
 
-# Diary Logger
+Requires Google OAuth. User must:
+1. Create OAuth Desktop client at console.cloud.google.com
+2. Download credentials JSON to `~/.glance/credentials/diary_logger/credentials.json`
+3. First run opens browser for consent. Token cached.
 
-Logs activities as events on a dedicated Google Calendar (e.g. "Personal Routine
-Diary"). Computes per-category statistics for the dashboard.
-
-## When to invoke
-
-- "log diary"
-- "log <activity> from 2:30pm to 4pm"
-- "log <activity> till 4pm"
-- "log <activity> at 10am"
-- "记录日志 ..."
-
-## Time handling
-
-Four patterns, all handled by `scripts/log.py`:
-
-| Pattern             | Example                          | Resolution                              |
-|---------------------|----------------------------------|-----------------------------------------|
-| Both explicit       | `from 2:30pm to 4pm`             | Parse both, write event                 |
-| Start only          | `from 4pm`                       | Start = parsed, end = now               |
-| End only            | `till 2:15pm`                    | Start = last event end, end = parsed    |
-| No explicit time    | (no time tokens)                 | Start = last event end, end = now       |
-
-## Categories
-
-`prod` (default), `admin`, `nonprod`. Override via `--category`.
-
-## Examples
+## Usage
 
 ```bash
-./scripts/log.py --title "wrapper refactor" --start "2:30pm" --end "4:00pm" --category prod
-./scripts/log.py --title "quick lunch till 2:15pm" --category admin
-./scripts/log.py --title "answer messages"
+glance diary log --title "wrapper refactor" --start 2:30pm --end 4pm
+glance diary stats
 ```
 
-## Stats output
+## Scripts
 
-`scripts/stats.py` returns `{today_count, total_minutes, by_category, recent}`.
+**scripts/log.py**
+```
+--title TEXT        Required. Activity description.
+--start TIME        Start time (e.g. "2:30pm", "14:30").
+--end TIME          End time.
+--date DATE         Date (YYYY-MM-DD). Default: today.
+```
+
+**scripts/stats.py** — returns JSON for dashboard panel.
+
+## Fields
+
+- `title` (TEXT)
+- `start_time` (TEXT)
+- `end_time` (TEXT)
+- `duration_minutes` (INTEGER)
+- `date` (DATE)
+
+## Dependencies
+
+- google-auth>=2.20
+- google-auth-oauthlib>=1.0
+- google-api-python-client>=2.100

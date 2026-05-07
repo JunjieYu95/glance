@@ -1,16 +1,37 @@
 ---
-name: mit
-description: Set or update the day's Most Important Task. Triggered when the user says "set MIT", "今天的 MIT", "tomorrow's MIT is X", or replies to the nightly check-in.
+name: glance-mit
+description: Most Important Task tracker. Set one MIT per day, check in nightly.
 ---
-
-# MIT (Most Important Task)
-
-One MIT per day. Nightly cron asks two questions; agent records both via
-`log.py --upsert`.
-
-## Examples
+## Usage
 
 ```bash
-./scripts/log.py --upsert --date 2026-05-03 --task "ship draft" --completed true
-./scripts/today_brief.py             # prints today's MIT for the cron prompt
+glance mit set --date 2026-05-06 --task "ship v0.2" --completed false
+glance mit today
+glance mit stats
 ```
+
+## Scripts
+
+**scripts/log.py**
+```
+--upsert           Create or update today's MIT
+--date DATE        Date (YYYY-MM-DD)
+--task TEXT        Required. The one task.
+--completed BOOL   true or false
+```
+
+**scripts/today_brief.py** — returns today's MIT as JSON.
+
+**scripts/stats.py** — returns JSON for dashboard panel.
+
+## Fields
+
+- `task` (TEXT) — the MIT description
+- `date` (DATE)
+- `completed` (INTEGER) — 0 or 1
+- `logged_at` (TIMESTAMP)
+
+## Cron
+
+Schedule: `0 23 * * *` — 11pm nightly.
+Notification: "What was your Most Important Task today?"

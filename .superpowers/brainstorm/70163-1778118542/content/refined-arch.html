@@ -1,0 +1,42 @@
+<h2>Refined Architecture: Framework + Marketplace</h2>
+<p class="subtitle">Core skeleton separated from example trackers — professional, extensible</p>
+
+<div class="mockup">
+  <div class="mockup-header">glance skill after clavhub install</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8;text-align:left">
+  glance/<br>
+  ├── SKILL.md &nbsp; <span style="color:var(--muted)">← how to use the framework</span><br>
+  ├── install.sh<br>
+  ├── <b>glance/</b> &nbsp; <span style="color:#4a7">← core framework skeleton</span><br>
+  │&nbsp; ├── cli.py<br>
+  │&nbsp; ├── core/ &nbsp; <span style="color:var(--muted)">registry, storage, cron, auth</span><br>
+  │&nbsp; ├── dashboard/ &nbsp; <span style="color:var(--muted)">HTML builder</span><br>
+  │&nbsp; └── skills/<br>
+  │&nbsp; &nbsp; &nbsp; └── scaffold_component/ &nbsp; <span style="color:var(--muted)">meta-skill</span><br>
+  └── <b>examples/</b> &nbsp; <span style="color:#c44">← marketplace examples</span><br>
+  &nbsp; &nbsp; ├── mood/ &nbsp; <span style="color:var(--muted)">example tracker</span><br>
+  &nbsp; &nbsp; ├── reminder/ &nbsp; <span style="color:var(--muted)">example tracker</span><br>
+  &nbsp; &nbsp; ├── mit/ &nbsp; <span style="color:var(--muted)">example tracker</span><br>
+  &nbsp; &nbsp; └── diary_logger/ &nbsp; <span style="color:var(--muted)">example tracker</span><br>
+  </div>
+</div>
+
+<div class="section">
+  <h3>How it works</h3>
+  <table style="width:100%;text-align:left">
+    <tr><td><code>clawhub install glance</code></td><td>Downloads framework + all examples</td></tr>
+    <tr><td><code>glance setup</code></td><td>Wizard: "Enable mood? [Y/n] Enable reminder? [Y/n]" — selected examples activated</td></tr>
+    <tr><td><code>glance scaffold</code></td><td>Creates USER trackers in <b>~/.glance/components/</b> — NOT inside the skill folder</td></tr>
+    <tr><td><code>glance dashboard</code></td><td>Builds from examples + user components</td></tr>
+  </table>
+</div>
+
+<div class="pros-cons">
+  <div class="pros"><h4>Design principles</h4><ul>
+    <li>Framework vs. examples — clear separation</li>
+    <li>User components live outside the skill — survive updates</li>
+    <li>Setup wizard: pick only what you want</li>
+    <li>Examples serve as reference for custom trackers</li>
+    <li>Community can publish tracker packs to ClawHub</li>
+  </ul></div>
+</div>

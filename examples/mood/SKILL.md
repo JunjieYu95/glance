@@ -1,19 +1,32 @@
 ---
-name: mood
-description: Log a mood check-in reply. Triggered when the user replies to a mood question, or says "log mood", "记录心情", or shares how they feel.
+name: glance-mood
+description: Hourly mood check-ins via chat. Log raw feelings with optional score.
 ---
-
-# Mood
-
-Hourly cron fires a question; user replies in the same chat session; agent
-calls `log.py --raw "<reply>"`.
-
-## Examples
+## Usage
 
 ```bash
-./scripts/log.py --raw "还行，下午有点累"
-./scripts/log.py --raw "great" --score 8 --label happy
+glance mood log --raw "feeling great today" --score 8
+glance mood stats
 ```
 
-Same-session matters: the cron that asks must be in the user's main session,
-not isolated, so the reply lands with the asking agent.
+## Scripts
+
+**scripts/log.py**
+```
+--raw TEXT          Required. How you're feeling right now.
+--score INT         Optional 1-10. Higher = better mood.
+--at TIMESTAMP      Optional. ISO timestamp. Default: now.
+```
+
+**scripts/stats.py** — returns JSON for dashboard panel.
+
+## Fields
+
+- `raw` (TEXT) — free-form mood description
+- `score` (INTEGER) — 1-10 scale
+- `logged_at` (TIMESTAMP) — when logged
+
+## Cron
+
+Schedule: `0 8-23 * * *` — hourly from 8am to 11pm.
+Notification: "How are you feeling right now?"
