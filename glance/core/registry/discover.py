@@ -1,19 +1,23 @@
-"""Walk skills/ and return components in dashboard order.
+"""Walk user components (default ~/.glance/components/) and return in dashboard order.
 
-A component is any folder with a `component.toml`. Nothing else needs
-registering.
+A component is any folder with a component.toml. Nothing else needs registering.
 """
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 try:
-    import tomllib  # py311+
-except ModuleNotFoundError:  # pragma: no cover
-    import tomli as tomllib  # type: ignore
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
+
+
+GLANCE_HOME = Path(os.environ.get("GLANCE_HOME", Path.home() / ".glance"))
+USER_COMPONENTS_ROOT = GLANCE_HOME / "components"
 
 
 @dataclass
@@ -52,6 +56,11 @@ class Component:
     def stats_script(self) -> Path:
         return self.path / "scripts" / "stats.py"
 
+    @property
+    def auth(self) -> dict[str, Any] | None:
+        a = self.config.get("auth")
+        return a if a else None
+
 
 def load_component(path: Path) -> Component | None:
     cfg_path = path / "component.toml"
@@ -66,15 +75,41 @@ def load_component(path: Path) -> Component | None:
     return Component(name=name, path=path, config=cfg)
 
 
-def discover_components(skills_root: Path, panel_only: bool = False) -> list[Component]:
+def discover_components(
+    skills_root: Path | None = None,
+    user_root: Path | None = None,
+    panel_only: bool = False,
+) -> list[Component]:
+    """Discover components from user_root (default ~/.glance/components/).
+
+    If skills_root is also provided, discover from both locations.
+    """
+    if user_root is None:
+        user_root = USER_COMPONENTS_ROOT
+
     components: list[Component] = []
-    for child in sorted(p for p in skills_root.iterdir() if p.is_dir()):
-        comp = load_component(child)
-        if comp is None:
+
+    roots: list[Path] = [user_root]
+    if skills_root is not None:
+        roots.insert(0, skills_root)
+
+    seen: set[str] = set()
+    for root in roots:
+        if not root.is_dir():
             continue
-        if panel_only and not comp.panel_enabled:
-            continue
-        components.append(comp)
+        for child in sorted(p for p in root.iterdir() if p.is_dir()):
+            comp = load_component(child)
+            if comp is None:
+                continue
+            if comp.name == "scaffold_component":
+                continue
+            if panel_only and not comp.panel_enabled:
+                continue
+            if comp.name in seen:
+                continue
+            seen.add(comp.name)
+            components.append(comp)
+
     components.sort(key=lambda c: (c.panel_order, c.name))
     return components
 
@@ -94,6 +129,6 @@ if __name__ == "__main__":
             "panel_enabled": c.panel_enabled,
             "cron": c.cron,
         }
-        for c in discover_components(skills_root)
+        for c in discover_components(skills_root=skills_root)
     ]
     print(json.dumps(out, indent=2))

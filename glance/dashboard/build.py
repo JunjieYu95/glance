@@ -151,7 +151,7 @@ def build(output_path: Path, run_migrations: bool = True) -> dict:
     if run_migrations:
         apply_all_migrations(SKILLS_ROOT)
 
-    components = [c for c in discover_components(SKILLS_ROOT, panel_only=True) if c.name != "scaffold_component"]
+    components = discover_components(SKILLS_ROOT, panel_only=True)
     panels_html: list[str] = []
     statuses: dict[str, str] = {}
     for comp in components:
