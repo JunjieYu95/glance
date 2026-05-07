@@ -1,0 +1,6 @@
+include examples/*/component.toml
+include examples/*/SKILL.md
+include examples/*/migrations/*.sql
+include examples/*/templates/**/*
+include examples/*/scripts/*.py
+recursive-include examples *.toml *.md *.sql *.py *.tmpl

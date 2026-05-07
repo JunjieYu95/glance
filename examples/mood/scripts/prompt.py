@@ -12,7 +12,7 @@ PROMPT = (
     "It is time for the hourly mood check-in. In this same chat session:\n"
     "1) Ask the user briefly how they feel right now (in their preferred language).\n"
     "2) When they reply, immediately run:\n"
-    "     python3 glance/skills/mood/scripts/log.py --raw \"<their full reply>\"\n"
+    "     python3 examples/mood/scripts/log.py --raw \"<their full reply>\"\n"
     "3) Confirm with a one-line ack (e.g. \"记下了 ✓\").\n"
     "Do not summarize previous moods. Do not skip silently."
 )

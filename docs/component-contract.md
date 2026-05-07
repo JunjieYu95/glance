@@ -1,13 +1,13 @@
 # Component Contract
 
 Every tracking component (diary, mood, workout, …) is a self-contained folder
-under `glance/skills/<name>/`. The dashboard, the scaffolder, and the
+under `examples/<name>/`. The dashboard, the scaffolder, and the
 install script all rely on this contract — nothing else.
 
 ## Folder shape
 
 ```
-skills/<name>/
+examples/<name>/
 ├── component.toml         # required, see schema below
 ├── SKILL.md               # openclaw skill definition
 ├── scripts/
@@ -21,7 +21,7 @@ skills/<name>/
 ```
 
 A component is "registered" by **existing on disk**. There is no central
-registry file to edit. The dashboard walks `skills/*/component.toml` at build
+registry file to edit. The dashboard walks `examples/*/component.toml` at build
 time.
 
 ## `component.toml` schema
@@ -91,7 +91,7 @@ python = ["google-auth", "google-api-python-client"]
 
 ## Migrations
 
-- Live in `skills/<name>/migrations/`.
+- Live in `examples/<name>/migrations/`.
 - Filenames must sort lexicographically in apply order (`001_*`, `002_*`, …).
 - Applied state tracked in a single shared table `_migrations(component, name, applied_at)`.
 - Migration runner is in `core/storage/migrations.py`.
