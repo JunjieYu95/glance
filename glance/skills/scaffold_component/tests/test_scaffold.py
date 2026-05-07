@@ -12,17 +12,14 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCAFFOLD = REPO_ROOT / "glance" / "skills" / "scaffold_component" / "scripts" / "scaffold.py"
-SKILLS = REPO_ROOT / "glance" / "skills"
 
 
 def test_scaffold_generates_and_runs():
     name = "pr_scaffold_test_tmp"
-    target = SKILLS / name
-    if target.exists():
-        shutil.rmtree(target)
-    try:
-        with tempfile.TemporaryDirectory() as tmp:
-            env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "components" / name
+        env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
+        try:
             out = subprocess.check_output(
                 [sys.executable, str(SCAFFOLD),
                  "--name", name, "--title", "Test",
@@ -50,9 +47,9 @@ def test_scaffold_generates_and_runs():
             stats = json.loads(stats_out)
             assert stats["status"] == "ok"
             assert stats["summary"]["total"] == 1
-    finally:
-        if target.exists():
-            shutil.rmtree(target)
+        finally:
+            if target.exists():
+                shutil.rmtree(target)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ from pathlib import Path
 from glance import __version__
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
-SKILLS_ROOT = PACKAGE_ROOT / "skills"
+SKILLS_ROOT = PACKAGE_ROOT.parent / "examples"
 DEFAULT_DASHBOARD_PATH = PACKAGE_ROOT / "dashboard" / "index.html"
 
 USAGE = f"""\
@@ -78,30 +78,21 @@ def _forward(module_dotted: str, argv: list[str]) -> int:
 # ── setup / doctor ─────────────────────────────────────────────────────────
 
 def cmd_setup(argv: list[str]) -> int:
-    from glance.core.auth import bootstrap_interactive
+    """Minimal init: migrations only. Auth is per-component, run on demand."""
     from glance.core.storage import apply_all_migrations
+    from glance.core.storage.db import GLANCE_HOME
 
     p = argparse.ArgumentParser(prog="glance setup")
-    p.add_argument("--skip-auth", action="store_true",
-                   help="Skip the Google OAuth flow (useful for offline setup)")
     args = p.parse_args(argv)
 
-    print("Applying component migrations...")
+    print("Running migrations...")
     applied = apply_all_migrations(SKILLS_ROOT)
-    print(json.dumps({"migrations_applied": applied}, indent=2))
-
-    if args.skip_auth:
-        print("Skipped Google OAuth (--skip-auth).")
-        return 0
-
-    print("\nRunning Google OAuth bootstrap...")
-    result = bootstrap_interactive()
-    print(json.dumps(result, indent=2))
-    return 0 if result.get("ok") else 1
+    print(json.dumps({"migrations_applied": applied, "glance_home": str(GLANCE_HOME)}, indent=2))
+    return 0
 
 
 def cmd_doctor(argv: list[str]) -> int:
-    from glance.core.auth import CREDENTIALS_PATH, TOKEN_PATH
+    from glance.core.auth.google_oauth import CREDENTIALS_PATH, TOKEN_PATH
     from glance.core.openclaw_cron import (
         JOBS_PATH,
         PR_OPENCLAW_CONFIG,
@@ -138,9 +129,9 @@ def cmd_diary(argv: list[str]) -> int:
     sub = argv[0] if argv else "log"
     rest = argv[1:] if argv else []
     if sub == "log":
-        return _forward("glance.skills.diary_logger.scripts.log", rest)
+        return _forward("examples.diary_logger.scripts.log", rest)
     if sub == "stats":
-        return _forward("glance.skills.diary_logger.scripts.stats", rest)
+        return _forward("examples.diary_logger.scripts.stats", rest)
     print(f"Unknown diary subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -149,9 +140,9 @@ def cmd_mood(argv: list[str]) -> int:
     sub = argv[0] if argv else "log"
     rest = argv[1:] if argv else []
     if sub == "log":
-        return _forward("glance.skills.mood.scripts.log", rest)
+        return _forward("examples.mood.scripts.log", rest)
     if sub == "stats":
-        return _forward("glance.skills.mood.scripts.stats", rest)
+        return _forward("examples.mood.scripts.stats", rest)
     print(f"Unknown mood subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -162,11 +153,11 @@ def cmd_reminder(argv: list[str]) -> int:
         return 2
     sub, rest = argv[0], argv[1:]
     if sub in {"add", "done", "cancel", "list"}:
-        return _forward("glance.skills.reminder.scripts.log", [f"--{sub}", *rest])
+        return _forward("examples.reminder.scripts.log", [f"--{sub}", *rest])
     if sub == "digest":
-        return _forward("glance.skills.reminder.scripts.digest", rest)
+        return _forward("examples.reminder.scripts.digest", rest)
     if sub == "stats":
-        return _forward("glance.skills.reminder.scripts.stats", rest)
+        return _forward("examples.reminder.scripts.stats", rest)
     print(f"Unknown reminder subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -177,11 +168,11 @@ def cmd_mit(argv: list[str]) -> int:
         return 2
     sub, rest = argv[0], argv[1:]
     if sub == "set":
-        return _forward("glance.skills.mit.scripts.log", ["--upsert", *rest])
+        return _forward("examples.mit.scripts.log", ["--upsert", *rest])
     if sub == "today":
-        return _forward("glance.skills.mit.scripts.today_brief", rest)
+        return _forward("examples.mit.scripts.today_brief", rest)
     if sub == "stats":
-        return _forward("glance.skills.mit.scripts.stats", rest)
+        return _forward("examples.mit.scripts.stats", rest)
     print(f"Unknown mit subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -192,6 +183,8 @@ def cmd_scaffold(argv: list[str]) -> int:
 
 def cmd_list(argv: list[str]) -> int:
     from glance.core.registry import discover_components
+    from glance.core.storage.db import GLANCE_HOME
+
     components = [
         {
             "name": c.name,
@@ -199,8 +192,9 @@ def cmd_list(argv: list[str]) -> int:
             "order": c.panel_order,
             "panel_enabled": c.panel_enabled,
             "has_cron": c.cron is not None,
+            "path": str(c.path),
         }
-        for c in discover_components(SKILLS_ROOT)
+        for c in discover_components()
     ]
     print(json.dumps(components, indent=2))
     return 0
@@ -213,7 +207,8 @@ def cmd_dashboard(argv: list[str]) -> int:
         return _forward("glance.dashboard.build", rest)
     if sub == "open":
         from glance.dashboard import build as dash_build
-        out = Path(rest[0]) if rest else DEFAULT_DASHBOARD_PATH
+        from glance.core.storage.db import GLANCE_HOME
+        out = GLANCE_HOME / "dashboard" / "index.html"
         result = dash_build.build(out)
         webbrowser.open(f"file://{result['output']}")
         print(json.dumps(result, indent=2))

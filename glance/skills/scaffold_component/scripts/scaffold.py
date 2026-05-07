@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from datetime import date
@@ -30,7 +31,10 @@ if str(REPO_ROOT) not in sys.path:
 from glance.core.storage import apply_component_migrations  # noqa: E402
 from glance.core import openclaw_cron  # noqa: E402
 
-SKILLS_ROOT = REPO_ROOT / "glance" / "skills"
+GLANCE_HOME = Path(os.environ.get("GLANCE_HOME", Path.home() / ".glance"))
+SKILLS_ROOT = GLANCE_HOME / "components"
+SKILLS_ROOT.mkdir(parents=True, exist_ok=True)
+
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1] / "templates" / "component"
 
 FIELD_TYPE_TO_SQL = {
@@ -168,7 +172,7 @@ def scaffold(args) -> dict:
 
     next_steps = [
         "Run dashboard/build.py to see the new panel.",
-        f'Try: ./{Path(dest, "scripts", "log.py").relative_to(REPO_ROOT)} {mapping["example_args"]}',
+        f'Try: python3 {Path(dest, "scripts", "log.py")} {mapping["example_args"]}',
     ]
     if cron_status and cron_status.get("action") == "skipped":
         next_steps.append("Cron not registered — fill in ~/.glance/openclaw.toml then re-scaffold with --force.")
@@ -177,7 +181,7 @@ def scaffold(args) -> dict:
         "ok": True,
         "name": args.name,
         "path": str(dest),
-        "files_written": [str(p.relative_to(REPO_ROOT)) for p in written],
+        "files_written": [str(p) for p in written],
         "migrations_applied": applied,
         "cron": cron_status,
         "next_steps": next_steps,
