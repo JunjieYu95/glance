@@ -22,6 +22,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from glance.core.registry import discover_components  # noqa: E402
 from glance.core.storage import apply_all_migrations  # noqa: E402
+from glance.dashboard.charts import render_chart  # noqa: E402
+from glance.dashboard.overview import render_overview_panel  # noqa: E402
 
 SKILLS_ROOT = REPO_ROOT / "glance" / "skills"
 TEMPLATE_PATH = Path(__file__).resolve().parent / "template.html"
@@ -94,9 +96,34 @@ def _render_panel(component, payload: dict) -> str:
         payload.get("freshness_hours"),
         component.freshness_hours,
     )
-    summary_html = _render_summary(payload.get("summary") or {})
-    rows_html = _render_rows(payload.get("rows") or [])
-    return f"""
+
+    chart_config = component.chart_config
+    if chart_config and chart_config.get("chart", {}).get("type"):
+        # Render as chart panel
+        chart_type = chart_config["chart"]["type"]
+        chart_title = chart_config["chart"].get("title", component.title)
+        chart_html = render_chart(chart_type, payload, chart_config)
+
+        # Still show summary data below chart if rows exist
+        rows_html = _render_rows(payload.get("rows") or [])
+        summary_html = _render_summary(payload.get("summary") or {})
+
+        return f"""
+<section class="panel" data-component="{html.escape(component.name)}">
+  <header>
+    <h2>{html.escape(chart_title)}</h2>
+    {badge}
+  </header>
+  <div class="chart-container">{chart_html}</div>
+  {f'<div class="summary">{summary_html}</div>' if summary_html else ''}
+  {f'<details><summary>Recent</summary>{rows_html}</details>' if payload.get("rows") else ''}
+</section>
+""".strip()
+    else:
+        # Backward-compatible basic card (unchanged)
+        summary_html = _render_summary(payload.get("summary") or {})
+        rows_html = _render_rows(payload.get("rows") or [])
+        return f"""
 <section class="panel" data-component="{html.escape(component.name)}">
   <header>
     <h2>{html.escape(component.title)}</h2>
@@ -160,10 +187,29 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
 
     panels_html: list[str] = []
     statuses: dict[str, str] = {}
+    overview_meta: list[dict] = []  # NEW: collect for overview panel
+
     for comp in components:
         payload = _run_stats(comp)
         statuses[comp.name] = payload.get("status", "unknown")
         panels_html.append(_render_panel(comp, payload))
+
+        # Collect overview metadata if chart_config exists with overview section
+        chart_config = comp.chart_config
+        if chart_config and chart_config.get("overview", {}).get("enabled") is not False:
+            overview_meta.append({
+                "name": comp.name,
+                "title": comp.title,
+                "overview": chart_config["overview"],
+                "payload": payload,
+            })
+
+    # Render overview panel
+    overview_html = render_overview_panel(overview_meta)
+
+    # Insert overview before the grid
+    if overview_html:
+        panels_html.insert(0, overview_html)
 
     template = (
         TEMPLATE_PATH.read_text(encoding="utf-8")
