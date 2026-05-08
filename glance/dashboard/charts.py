@@ -402,3 +402,129 @@ def render_calendar_grid(data: list[dict], date_field: str = "date",
         )
 
     return f'<div class="chart-calendar-grid">{"".join(months_html)}</div>'
+
+
+# ---------------------------------------------------------------------------
+# Chart dispatch — selects the right renderer based on chart.toml config
+# ---------------------------------------------------------------------------
+
+def _extract_values(payload: dict, config: dict) -> list[dict]:
+    """Extract chart data from stats payload based on chart config."""
+    chart_data = config.get("chart", {}).get("data", {})
+    source = chart_data.get("source", "rows")
+
+    if source == "summary":
+        summary = payload.get("summary", {})
+        value_field = chart_data.get("value_field", "")
+        label_field = chart_data.get("label_field", "")
+        # If value_field names a key in summary that is itself a dict,
+        # expand it into {label: value} pairs (e.g., by_category_today)
+        if value_field and value_field in summary and isinstance(summary[value_field], dict):
+            nested = summary[value_field]
+            return [{"label": str(k), "value": v} for k, v in nested.items()]
+        # Otherwise return a single-item list from summary values
+        return [summary]
+
+    # source == "rows"
+    return payload.get("rows", [])
+
+
+def render_chart(chart_type: str, payload: dict, config: dict) -> str:
+    """Render a chart panel based on chart type, stats payload, and config.
+
+    Args:
+        chart_type: One of the SUPPORTED_CHART_TYPES
+        payload: The stats.py JSON output dict
+        config: The full parsed chart.toml dict (chart + overview sections)
+
+    Returns:
+        HTML string to embed in the panel.
+    """
+    chart_cfg = config.get("chart", {})
+    chart_title = chart_cfg.get("title", "")
+    data_cfg = chart_cfg.get("data", {})
+    options = chart_cfg.get("options", {})
+
+    if chart_type == "status_card":
+        data_key = options.get("status_field", "")
+        label = options.get("label", "")
+        # Read from summary via dot notation
+        summary = payload.get("summary", {})
+        value = summary.get(data_key, "") if data_key else ""
+        if isinstance(value, dict):
+            value = ", ".join(f"{k}: {v}" for k, v in value.items())
+        status = bool(value) if isinstance(value, (bool, int)) else None
+        return render_status_card(
+            title=chart_title or label,
+            value=str(value),
+            status=True if isinstance(value, bool) and value else status,
+        )
+
+    # Extract data from payload
+    chart_data = _extract_values(payload, config)
+
+    if not chart_data:
+        return _no_data()
+
+    if chart_type == "bar":
+        return render_bar_chart(
+            chart_data,
+            label_field=data_cfg.get("label_field", "label"),
+            value_field=data_cfg.get("value_field", "value"),
+            max_value=options.get("max_value"),
+            color=options.get("color", "var(--ok)")
+        )
+
+    if chart_type in ("pie", "donut"):
+        return render_pie_donut(
+            chart_data,
+            label_field=data_cfg.get("label_field", "label"),
+            value_field=data_cfg.get("value_field", "value"),
+            donut=(chart_type == "donut"),
+        )
+
+    if chart_type == "sparkline":
+        values = [d.get(data_cfg.get("value_field", "value"), 0) for d in chart_data]
+        return render_sparkline(
+            values,
+            width=options.get("width", 200),
+            height=options.get("height", 40),
+            color=options.get("color", "var(--ok)"),
+        )
+
+    if chart_type == "progress_bar":
+        max_v = options.get("max_value", 100)
+        current = float(chart_data[0].get(data_cfg.get("value_field", "value"), 0)) if chart_data else 0
+        return render_progress_bar(
+            current=current,
+            max_value=max_v,
+            label=options.get("label", ""),
+            unit=options.get("unit", ""),
+        )
+
+    if chart_type == "heatmap":
+        return render_heatmap(
+            chart_data,
+            date_field=data_cfg.get("date_field", "date"),
+            value_field=data_cfg.get("value_field", "value"),
+            color_scheme=options.get("color_scheme", "green"),
+        )
+
+    if chart_type == "calendar_grid":
+        return render_calendar_grid(
+            chart_data,
+            date_field=data_cfg.get("date_field", "date"),
+            value_field=data_cfg.get("value_field", "value"),
+            color_scheme=options.get("color_scheme", "green"),
+        )
+
+    if chart_type == "timeline":
+        return render_timeline(
+            chart_data,
+            time_field=data_cfg.get("time_field", "time"),
+            title_field=data_cfg.get("title_field", "title"),
+            desc_field=data_cfg.get("desc_field", ""),
+        )
+
+    # Fallback: basic card rendering (unchanged behavior)
+    return ""

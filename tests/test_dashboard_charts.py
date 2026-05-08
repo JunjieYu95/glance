@@ -9,6 +9,37 @@ from pathlib import Path
 
 
 # ============================================================================
+# Chart dispatch tests (Task 7)
+# ============================================================================
+
+
+def test_render_chart_dispatches_to_correct_renderer():
+    from glance.dashboard.charts import render_chart
+
+    # Test bar chart dispatch
+    result = render_chart(
+        chart_type="bar",
+        payload={"summary": {}, "rows": []},
+        config={
+            "chart": {
+                "type": "bar",
+                "data": {"source": "summary", "value_field": "total"},
+            },
+            "overview": {"enabled": False},
+        },
+    )
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+
+def test_render_chart_unknown_type_falls_back():
+    from glance.dashboard.charts import render_chart
+    # Should not crash for unsupported type — return basic card HTML
+    result = render_chart("unknown", {"summary": {"x": 1}, "rows": []}, {})
+    assert isinstance(result, str)
+
+
+# ============================================================================
 # Grid chart renderer tests (Task 6)
 # ============================================================================
 
