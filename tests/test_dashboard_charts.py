@@ -9,6 +9,70 @@ from pathlib import Path
 
 
 # ============================================================================
+# Overview panel tests (Task 8)
+# ============================================================================
+
+
+def test_render_overview_panel_empty():
+    from glance.dashboard.overview import render_overview_panel
+    html_out = render_overview_panel([])  # no components
+    assert isinstance(html_out, str)
+
+
+def test_render_overview_panel_with_components():
+    from glance.dashboard.overview import render_overview_panel
+    components_meta = [
+        {
+            "name": "mood",
+            "title": "Mood",
+            "overview": {
+                "enabled": True,
+                "card_type": "sparkline",
+                "label": "Mood",
+                "data_key": "summary.avg_score_7d",
+                "suffix": "/10",
+            },
+            "payload": {
+                "summary": {"avg_score_7d": 7.2},
+                "rows": [{"mood_score": 7}, {"mood_score": 8}, {"mood_score": 6}],
+            },
+        },
+        {
+            "name": "mit",
+            "title": "MIT",
+            "overview": {
+                "enabled": True,
+                "card_type": "stat",
+                "label": "Today's MIT",
+                "data_key": "summary.today_task",
+            },
+            "payload": {
+                "summary": {"today_task": "Design API", "today_completed": True},
+                "rows": [],
+            },
+        },
+    ]
+    html_out = render_overview_panel(components_meta)
+    assert "Mood" in html_out
+    assert "overview" in html_out
+    assert "Design API" in html_out or "MIT" in html_out
+
+
+def test_resolve_data_key_nested():
+    from glance.dashboard.overview import resolve_data_key
+    payload = {"summary": {"by_category": {"prod": 240, "admin": 72}}}
+    val = resolve_data_key(payload, "summary.by_category")
+    assert val == {"prod": 240, "admin": 72}
+
+
+def test_resolve_data_key_top():
+    from glance.dashboard.overview import resolve_data_key
+    payload = {"status": "ok"}
+    val = resolve_data_key(payload, "status")
+    assert val == "ok"
+
+
+# ============================================================================
 # Chart dispatch tests (Task 7)
 # ============================================================================
 
