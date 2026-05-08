@@ -61,6 +61,12 @@ class Component:
         a = self.config.get("auth")
         return a if a else None
 
+    @property
+    def chart_config(self) -> dict | None:
+        """Chart configuration from chart.toml, or None if no chart config."""
+        from glance.dashboard.load_chart_config import load_chart_config
+        return load_chart_config(self.path)
+
 
 def load_component(path: Path) -> Component | None:
     cfg_path = path / "component.toml"
