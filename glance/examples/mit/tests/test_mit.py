@@ -10,7 +10,7 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[5]
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 
 
