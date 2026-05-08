@@ -35,18 +35,18 @@ jobs:
       - name: Validate SKILL.md files
         run: |
           test -f SKILL.md
-          test -f examples/mood/SKILL.md
-          test -f examples/reminder/SKILL.md
-          test -f examples/mit/SKILL.md
-          test -f examples/diary_logger/SKILL.md
+          test -f glance/examples/mood/SKILL.md
+          test -f glance/examples/reminder/SKILL.md
+          test -f glance/examples/mit/SKILL.md
+          test -f glance/examples/diary_logger/SKILL.md
           test -f glance/skills/scaffold_component/SKILL.md
       - name: Tests
-        run: pytest glance/ examples/ -v
+        run: pytest tests/ glance/ -v
       - name: Demo + dashboard build
         env:
-          GLANCE_HOME: ${{ github.workspace }}/examples/demo-data
+          GLANCE_HOME: ${{ github.workspace }}/demo_tmp
         run: |
           mkdir -p "$GLANCE_HOME"
-          python examples/demo-data/seed.py
+          python glance/examples/demo-data/seed.py
           glance dashboard build --out /tmp/index.html
           test -s /tmp/index.html
