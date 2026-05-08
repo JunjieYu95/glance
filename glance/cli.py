@@ -17,7 +17,7 @@ from pathlib import Path
 from glance import __version__
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
-SKILLS_ROOT = PACKAGE_ROOT.parent / "examples"
+SKILLS_ROOT = PACKAGE_ROOT / "examples"
 DEFAULT_DASHBOARD_PATH = PACKAGE_ROOT / "dashboard" / "index.html"
 
 USAGE = f"""\
@@ -129,9 +129,9 @@ def cmd_diary(argv: list[str]) -> int:
     sub = argv[0] if argv else "log"
     rest = argv[1:] if argv else []
     if sub == "log":
-        return _forward("examples.diary_logger.scripts.log", rest)
+        return _forward("glance.examples.diary_logger.scripts.log", rest)
     if sub == "stats":
-        return _forward("examples.diary_logger.scripts.stats", rest)
+        return _forward("glance.examples.diary_logger.scripts.stats", rest)
     print(f"Unknown diary subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -140,9 +140,9 @@ def cmd_mood(argv: list[str]) -> int:
     sub = argv[0] if argv else "log"
     rest = argv[1:] if argv else []
     if sub == "log":
-        return _forward("examples.mood.scripts.log", rest)
+        return _forward("glance.examples.mood.scripts.log", rest)
     if sub == "stats":
-        return _forward("examples.mood.scripts.stats", rest)
+        return _forward("glance.examples.mood.scripts.stats", rest)
     print(f"Unknown mood subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -153,11 +153,11 @@ def cmd_reminder(argv: list[str]) -> int:
         return 2
     sub, rest = argv[0], argv[1:]
     if sub in {"add", "done", "cancel", "list"}:
-        return _forward("examples.reminder.scripts.log", [f"--{sub}", *rest])
+        return _forward("glance.examples.reminder.scripts.log", [f"--{sub}", *rest])
     if sub == "digest":
-        return _forward("examples.reminder.scripts.digest", rest)
+        return _forward("glance.examples.reminder.scripts.digest", rest)
     if sub == "stats":
-        return _forward("examples.reminder.scripts.stats", rest)
+        return _forward("glance.examples.reminder.scripts.stats", rest)
     print(f"Unknown reminder subcommand: {sub}", file=sys.stderr)
     return 2
 
@@ -168,11 +168,11 @@ def cmd_mit(argv: list[str]) -> int:
         return 2
     sub, rest = argv[0], argv[1:]
     if sub == "set":
-        return _forward("examples.mit.scripts.log", ["--upsert", *rest])
+        return _forward("glance.examples.mit.scripts.log", ["--upsert", *rest])
     if sub == "today":
-        return _forward("examples.mit.scripts.today_brief", rest)
+        return _forward("glance.examples.mit.scripts.today_brief", rest)
     if sub == "stats":
-        return _forward("examples.mit.scripts.stats", rest)
+        return _forward("glance.examples.mit.scripts.stats", rest)
     print(f"Unknown mit subcommand: {sub}", file=sys.stderr)
     return 2
 

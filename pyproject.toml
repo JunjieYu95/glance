@@ -65,6 +65,11 @@ glance = [
     "skills/**/*.tmpl",
     "skills/**/templates/**/*",
     "dashboard/*.html",
+    "examples/**/*.py",
+    "examples/**/*.toml",
+    "examples/**/*.md",
+    "examples/**/*.sql",
+    "examples/**/templates/**/*",
 ]
 
 [tool.pytest.ini_options]

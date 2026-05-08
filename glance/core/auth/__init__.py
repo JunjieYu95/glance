@@ -18,7 +18,7 @@ def bootstrap_for_component(component_name: str, auth_config: dict) -> dict:
     if kind == "google":
         from importlib import import_module
         try:
-            mod = import_module(f"examples.{component_name}.scripts.google_oauth")
+            mod = import_module(f"glance.examples.{component_name}.scripts.google_oauth")
             return mod.bootstrap_interactive()
         except ImportError:
             return {
