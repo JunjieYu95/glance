@@ -18,7 +18,7 @@ def _setup(tmp):
     env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
     subprocess.check_call(
         [sys.executable, "-m", "glance.core.storage.migrations",
-         str(REPO_ROOT / "examples" / "mit")],
+         str(REPO_ROOT / "glance" / "examples" / "mit")],
         env=env, cwd=REPO_ROOT,
     )
     return env

@@ -20,7 +20,7 @@ def _set_home(tmp):
 def test_apply_creates_tables():
     with tempfile.TemporaryDirectory() as tmp:
         _set_home(tmp)
-        applied = apply_all_migrations(REPO_ROOT / "examples")
+        applied = apply_all_migrations(REPO_ROOT / "glance" / "examples")
         assert "mood" in applied and "reminder" in applied and "mit" in applied and "diary_logger" in applied
         with get_connection() as conn:
             tables = {r[0] for r in conn.execute(
@@ -34,8 +34,8 @@ def test_apply_creates_tables():
 def test_idempotent():
     with tempfile.TemporaryDirectory() as tmp:
         _set_home(tmp)
-        first = apply_all_migrations(REPO_ROOT / "examples")
-        second = apply_all_migrations(REPO_ROOT / "examples")
+        first = apply_all_migrations(REPO_ROOT / "glance" / "examples")
+        second = apply_all_migrations(REPO_ROOT / "glance" / "examples")
         assert first  # something happened the first time
         assert second == {}  # nothing the second time
 
