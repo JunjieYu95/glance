@@ -141,28 +141,234 @@ DEFAULT_TEMPLATE = """<!doctype html>
   <meta charset="utf-8">
   <title>glance — Dashboard</title>
   <style>
-    :root { color-scheme: light dark; --bg:#fafafa; --fg:#222; --muted:#888; --card:#fff; --line:#eee; --ok:#4a7; --bad:#c44; }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg:#111; --fg:#eee; --muted:#888; --card:#1a1a1a; --line:#2a2a2a; }
+    :root {
+      color-scheme: light dark;
+      --bg: #fafafa; --fg: #222; --muted: #888;
+      --card: #fff; --line: #eee;
+      --ok: #4a7; --bad: #c44;
+      --chart-line: #ddd;
     }
-    body { background:var(--bg); color:var(--fg); font:14px/1.5 -apple-system, system-ui, sans-serif; margin:0; padding:24px; }
-    h1 { margin:0 0 4px; font-size:20px; }
-    .built-at { color:var(--muted); font-size:12px; margin-bottom:24px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; }
-    .panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
-    .panel header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-    .panel h2 { margin:0; font-size:16px; }
-    .summary div { margin:2px 0; }
-    .badge { font-size:11px; padding:2px 8px; border-radius:4px; }
-    .badge.ok { background:rgba(74,170,119,0.18); color:var(--ok); }
-    .badge.bad { background:rgba(204,68,68,0.18); color:var(--bad); }
-    .badge.muted { background:rgba(136,136,136,0.18); color:var(--muted); }
-    details { margin-top:8px; }
-    details summary { cursor:pointer; color:var(--muted); }
-    table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
-    th, td { text-align:left; padding:4px 6px; border-bottom:1px solid var(--line); }
-    th { color:var(--muted); font-weight:500; }
-    .muted-row { color:var(--muted); font-size:12px; padding:4px 0; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111; --fg: #eee; --muted: #888;
+        --card: #1a1a1a; --line: #2a2a2a;
+        --chart-line: #333;
+      }
+    }
+    body {
+      background: var(--bg); color: var(--fg);
+      font: 14px/1.5 -apple-system, system-ui, sans-serif;
+      margin: 0; padding: 24px;
+    }
+    h1 { margin: 0 0 4px; font-size: 20px; }
+    .built-at { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .panel {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 8px; padding: 16px;
+    }
+    .panel header {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 8px;
+    }
+    .panel h2 { margin: 0; font-size: 16px; }
+    .summary div { margin: 2px 0; }
+    .badge {
+      font-size: 11px; padding: 2px 8px; border-radius: 4px;
+      white-space: nowrap;
+    }
+    .badge.ok { background: rgba(74,170,119,0.18); color: var(--ok); }
+    .badge.bad { background: rgba(204,68,68,0.18); color: var(--bad); }
+    .badge.muted { background: rgba(136,136,136,0.18); color: var(--muted); }
+    details { margin-top: 8px; }
+    details summary { cursor: pointer; color: var(--muted); }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12px; margin-top: 8px;
+    }
+    th, td {
+      text-align: left; padding: 4px 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    th { color: var(--muted); font-weight: 500; }
+    .muted-row { color: var(--muted); font-size: 12px; padding: 4px 0; }
+    .chart-empty {
+      color: var(--muted); font-size: 13px;
+      text-align: center; padding: 24px 0;
+    }
+
+    /* ── Overview Panel ── */
+    .overview-panel {
+      grid-column: 1 / -1;
+      border-color: var(--ok);
+    }
+    .overview-grid {
+      display: flex; flex-wrap: wrap;
+      gap: 12px; margin-top: 8px;
+    }
+    .ov-card {
+      flex: 1 1 140px; min-width: 120px;
+      padding: 12px; border-radius: 6px;
+      background: rgba(128,128,128,0.06);
+      text-align: center;
+    }
+    .ov-label {
+      display: block; font-size: 11px;
+      color: var(--muted); margin-bottom: 4px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .ov-value {
+      display: block; font-size: 18px;
+      font-weight: 600; margin-top: 4px;
+    }
+    .ov-badge-value { font-size: 14px; }
+
+    /* ── Progress Bar ── */
+    .chart-progress { margin: 8px 0; }
+    .progress-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .progress-track {
+      height: 10px; background: var(--line);
+      border-radius: 5px; overflow: hidden; margin: 4px 0;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 5px;
+      transition: width 0.5s ease;
+    }
+    .progress-value {
+      font-size: 12px; color: var(--muted);
+      display: block; text-align: right;
+    }
+
+    /* ── Status Card ── */
+    .chart-status-card { text-align: center; padding: 16px 0; }
+    .status-title { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .status-value { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+
+    /* ── Bar Chart ── */
+    .chart-bars { margin: 8px 0; }
+    .bar-item {
+      display: flex; align-items: center;
+      gap: 8px; margin: 4px 0;
+    }
+    .bar-label {
+      font-size: 12px; min-width: 60px;
+      text-align: right; color: var(--muted);
+    }
+    .bar-track {
+      flex: 1; height: 16px;
+      background: var(--line); border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 4px;
+      min-width: 2px; transition: width 0.3s ease;
+    }
+    .bar-value {
+      font-size: 12px; min-width: 36px;
+      color: var(--fg); text-align: left;
+    }
+
+    /* ── Pie / Donut ── */
+    .chart-pie-wrapper, .chart-donut-wrapper {
+      text-align: center; margin: 8px 0;
+    }
+    .chart-pie, .chart-donut { display: inline-block; }
+    .pie-slice-hit { cursor: pointer; }
+    .donut-center-text {
+      font-size: 18px; font-weight: 600;
+      fill: var(--fg);
+    }
+    .chart-legend {
+      list-style: none; padding: 0; margin: 8px 0 0;
+      display: flex; flex-wrap: wrap;
+      gap: 6px 14px; justify-content: center;
+      font-size: 12px;
+    }
+    .legend-swatch {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 2px; margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    /* ── Sparkline ── */
+    .chart-sparkline { display: inline-block; vertical-align: middle; }
+
+    /* ── Heatmap ── */
+    .chart-heatmap {
+      display: inline-block; margin: 8px 0; overflow-x: auto;
+      max-width: 100%;
+    }
+    .hm-header-row {
+      display: flex; gap: 2px; margin-bottom: 2px;
+      padding-left: 24px;
+    }
+    .hm-header {
+      width: 14px; font-size: 9px; color: var(--muted);
+      text-align: center;
+    }
+    .hm-row { display: flex; gap: 2px; margin: 1px 0; }
+    .hm-cell {
+      width: 14px; height: 14px; border-radius: 2px;
+      position: relative;
+    }
+    .hm-cell:hover { outline: 2px solid var(--fg); z-index: 1; }
+    .hm-empty { background: transparent; }
+
+    /* ── Calendar Grid ── */
+    .chart-calendar-grid { margin: 8px 0; }
+    .cal-month { margin-bottom: 12px; }
+    .cal-month-title {
+      font-size: 13px; font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .cal-dow-row, .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px; max-width: 280px;
+    }
+    .cal-dow {
+      font-size: 10px; color: var(--muted);
+      text-align: center; padding: 2px 0;
+    }
+    .cal-cell {
+      aspect-ratio: 1; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; cursor: default;
+    }
+    .cal-empty, .cal-future { background: transparent; }
+    .cal-no-data { background: var(--line); opacity: 0.3; }
+    .cal-future { color: var(--muted); opacity: 0.3; }
+    .cal-day { font-size: 10px; }
+
+    /* ── Timeline ── */
+    .chart-timeline {
+      position: relative; margin: 8px 0;
+      padding-left: 24px;
+    }
+    .chart-timeline::before {
+      content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px;
+      width: 2px; background: var(--line);
+    }
+    .timeline-item {
+      position: relative; margin-bottom: 12px;
+    }
+    .timeline-dot {
+      position: absolute; left: -20px; top: 5px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--ok); border: 2px solid var(--card);
+    }
+    .timeline-time {
+      font-size: 11px; color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .timeline-title { font-size: 13px; font-weight: 500; }
+    .timeline-desc { font-size: 12px; color: var(--muted); }
+
+    /* ── Chart Container ── */
+    .chart-container { margin-top: 4px; }
   </style>
 </head>
 <body>
