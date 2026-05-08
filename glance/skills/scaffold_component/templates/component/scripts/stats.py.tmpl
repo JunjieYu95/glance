@@ -38,9 +38,10 @@ def build_stats() -> dict:
 
     freshness_hours = None
     if last_row:
-        from datetime import datetime
+        from datetime import datetime, timezone
         last_dt = datetime.fromisoformat(last_row["created_at"])
-        freshness_hours = round((datetime.utcnow() - last_dt).total_seconds() / 3600.0, 2)
+        now_utc = datetime.now(timezone.utc)
+        freshness_hours = round((now_utc - last_dt).total_seconds() / 3600.0, 2)
 
     return {
         "freshness_hours": freshness_hours,
