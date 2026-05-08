@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
+COMPONENT_DIR = Path(__file__).resolve().parents[2]
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 
 
@@ -22,7 +23,7 @@ def test_log_then_stats():
         env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
         subprocess.check_call(
             [sys.executable, "-m", "glance.core.storage.migrations",
-             str(REPO_ROOT / "glance" / "examples" / "mood")],
+             str(COMPONENT_DIR)],
             env=env, cwd=REPO_ROOT,
         )
         out = _run([sys.executable, str(SCRIPTS / "log.py"),
@@ -40,7 +41,7 @@ def test_stats_empty():
         env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
         subprocess.check_call(
             [sys.executable, "-m", "glance.core.storage.migrations",
-             str(REPO_ROOT / "glance" / "examples" / "mood")],
+             str(COMPONENT_DIR)],
             env=env, cwd=REPO_ROOT,
         )
         stats = json.loads(_run([sys.executable, str(SCRIPTS / "stats.py")], env))
