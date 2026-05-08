@@ -9,6 +9,46 @@ from pathlib import Path
 
 
 # ============================================================================
+# Grid chart renderer tests (Task 6)
+# ============================================================================
+
+
+def test_render_heatmap():
+    from glance.dashboard.charts import render_heatmap
+    rows = [
+        {"date": "2026-05-01", "score": 3},
+        {"date": "2026-05-02", "score": 7},
+        {"date": "2026-05-03", "score": 5},
+    ]
+    html_out = render_heatmap(rows, date_field="date", value_field="score")
+    assert 'class="chart-heatmap"' in html_out
+    assert "Mon" in html_out or "Tue" in html_out or "heatmap" in html_out
+
+
+def test_render_heatmap_empty():
+    from glance.dashboard.charts import render_heatmap
+    html_out = render_heatmap([], date_field="date", value_field="val")
+    assert "No data" in html_out
+
+
+def test_render_calendar_grid():
+    from glance.dashboard.charts import render_calendar_grid
+    rows = [
+        {"date": "2026-05-01", "count": 2},
+        {"date": "2026-05-05", "count": 5},
+    ]
+    html_out = render_calendar_grid(rows, date_field="date", value_field="count")
+    assert 'class="chart-calendar-grid"' in html_out
+    assert "calendar" in html_out.lower() or "May" in html_out
+
+
+def test_render_calendar_grid_empty():
+    from glance.dashboard.charts import render_calendar_grid
+    html_out = render_calendar_grid([], date_field="date", value_field="val")
+    assert "No data" in html_out
+
+
+# ============================================================================
 # SVG chart renderer tests (Task 5)
 # ============================================================================
 

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import html as html_mod
 import math
+from datetime import date, datetime, timedelta
 from typing import Any
 
 
@@ -233,3 +234,171 @@ def render_pie_donut(data: list[dict], label_field: str = "label",
         f'<ul class="chart-legend">{"".join(legend)}</ul>'
         f'</div>'
     )
+
+
+# ---------------------------------------------------------------------------
+# Heatmap — CSS grid with colored cells (GitHub contribution graph style)
+# ---------------------------------------------------------------------------
+
+def render_heatmap(data: list[dict], date_field: str = "date",
+                   value_field: str = "value",
+                   weeks: int = 13, color_scheme: str = "green") -> str:
+    if not data:
+        return _no_data()
+
+    # Build a lookup from date string to value
+    val_map: dict[str, float] = {}
+    for d in data:
+        ds = d.get(date_field)
+        if ds:
+            ds_str = str(ds)[:10]  # YYYY-MM-DD
+            val_map[ds_str] = float(d.get(value_field, 0))
+
+    # Build the grid: last N weeks, Mon–Sun columns
+    today = date.today()
+    # Start from the end of last week (Sunday) going back `weeks` weeks
+    end_sunday = today + timedelta(days=(6 - today.weekday()))
+    start_monday = end_sunday - timedelta(days=weeks * 7 - 1)
+
+    all_values = list(val_map.values()) if val_map else [0]
+    max_v = max(all_values) if all_values else 1
+    min_v = min(all_values)
+
+    # Color schemes
+    def cell_style(v: float | None) -> str:
+        if v is None:
+            return 'style="background:var(--line)"'
+        intensity = (v - min_v) / (max_v - min_v) if max_v > min_v else 0.5
+        if color_scheme == "green":
+            r, g, b = 74, 170, 119
+        elif color_scheme == "blue":
+            r, g, b = 74, 140, 220
+        elif color_scheme == "red":
+            r, g, b = 204, 68, 68
+        elif color_scheme == "purple":
+            r, g, b = 140, 100, 200
+        else:
+            r, g, b = 74, 170, 119
+        alpha = 0.15 + intensity * 0.85
+        return f'style="background:rgba({r},{g},{b},{alpha:.2f})"'
+
+    # Day-of-week headers
+    dow = ["Mon", "", "Wed", "", "Fri", "", ""]
+    header_cells = "".join(
+        f'<div class="hm-header">{d}</div>' for d in dow
+    )
+
+    # Days of week as rows, weeks as columns
+    hm_rows = []
+    for dow_idx in range(7):
+        cells = []
+        for w in range(weeks):
+            cell_date = start_monday + timedelta(days=w * 7 + dow_idx)
+            if cell_date > today:
+                cells.append('<div class="hm-cell hm-empty"></div>')
+                continue
+            ds = cell_date.isoformat()
+            v = val_map.get(ds)
+            cells.append(
+                f'<div class="hm-cell" {cell_style(v)} title="{cell_date}: {v or 0}"></div>'
+            )
+        hm_rows.append(f'<div class="hm-row">{"".join(cells)}</div>')
+
+    return (
+        f'<div class="chart-heatmap">'
+        f'<div class="hm-header-row">{header_cells}</div>'
+        f'{"".join(hm_rows)}'
+        f'</div>'
+    )
+
+
+# ---------------------------------------------------------------------------
+# Calendar grid — monthly calendar with colored day cells
+# ---------------------------------------------------------------------------
+
+_MONTH_NAMES = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
+
+
+def render_calendar_grid(data: list[dict], date_field: str = "date",
+                         value_field: str = "value",
+                         months_back: int = 3,
+                         color_scheme: str = "green") -> str:
+    if not data:
+        return _no_data()
+
+    # Build lookup
+    val_map: dict[str, float] = {}
+    for d in data:
+        ds = str(d.get(date_field, ""))[:10]
+        if ds:
+            val_map[ds] = float(d.get(value_field, 0))
+
+    today = date.today()
+    all_values = list(val_map.values()) if val_map else [0]
+    max_v = max(all_values) if all_values else 1
+
+    months_html = []
+    for m_offset in range(months_back - 1, -1, -1):
+        # Month to display
+        month_first = date(today.year, today.month, 1)
+        # Go back m_offset months
+        for _ in range(m_offset):
+            month_first = (month_first - timedelta(days=1)).replace(day=1)
+        # Calculate last day of month
+        if month_first.month == 12:
+            month_last = date(month_first.year + 1, 1, 1) - timedelta(days=1)
+        else:
+            month_last = date(month_first.year, month_first.month + 1, 1) - timedelta(days=1)
+
+        # Day-of-week headers
+        dow_header = "".join(
+            f'<div class="cal-dow">{d}</div>'
+            for d in ["M", "T", "W", "T", "F", "S", "S"]
+        )
+
+        # Fill in days
+        cells = []
+        start_dow = month_first.weekday()  # 0=Mon
+        for _ in range(start_dow):
+            cells.append('<div class="cal-cell cal-empty"></div>')
+
+        for day in range(1, month_last.day + 1):
+            curr = date(month_first.year, month_first.month, day)
+            ds = curr.isoformat()
+            v = val_map.get(ds)
+            if curr > today:
+                cells.append('<div class="cal-cell cal-future"></div>')
+            elif v is None:
+                cells.append('<div class="cal-cell cal-no-data"></div>')
+            else:
+                intensity = min(v / max_v, 1.0) if max_v > 0 else 0.5
+                if color_scheme == "green":
+                    r, g, b = 74, 170, 119
+                elif color_scheme == "blue":
+                    r, g, b = 74, 140, 220
+                elif color_scheme == "red":
+                    r, g, b = 204, 68, 68
+                elif color_scheme == "purple":
+                    r, g, b = 140, 100, 200
+                else:
+                    r, g, b = 74, 170, 119
+                alpha = 0.2 + intensity * 0.8
+                cells.append(
+                    f'<div class="cal-cell" '
+                    f'style="background:rgba({r},{g},{b},{alpha:.2f})" '
+                    f'title="{ds}: {v}">'
+                    f'<span class="cal-day">{day}</span></div>'
+                )
+
+        months_html.append(
+            f'<div class="cal-month">'
+            f'<div class="cal-month-title">{_MONTH_NAMES[month_first.month - 1]} {month_first.year}</div>'
+            f'<div class="cal-dow-row">{dow_header}</div>'
+            f'<div class="cal-grid">{"".join(cells)}</div>'
+            f'</div>'
+        )
+
+    return f'<div class="chart-calendar-grid">{"".join(months_html)}</div>'
