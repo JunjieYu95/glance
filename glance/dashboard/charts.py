@@ -6,6 +6,7 @@ Each function returns an HTML string to be embedded in a dashboard panel.
 from __future__ import annotations
 
 import html as html_mod
+import math
 from typing import Any
 
 
@@ -106,3 +107,129 @@ def render_timeline(events: list[dict], time_field: str = "time",
   </div>
 </div>""")
     return f'<div class="chart-timeline">{"".join(items)}</div>'
+
+
+# ---------------------------------------------------------------------------
+# Sparkline — inline SVG polyline
+# ---------------------------------------------------------------------------
+
+def render_sparkline(values: list[float], width: int = 200, height: int = 40,
+                     color: str = "var(--ok)", line_width: int = 2) -> str:
+    if not values:
+        return ""
+    if len(values) == 1:
+        # Single value — draw a dot
+        return (
+            f'<svg width="{width}" height="{height}" class="chart-sparkline">'
+            f'<circle cx="50%" cy="50%" r="3" fill="{color}"/>'
+            f'</svg>'
+        )
+    min_v = min(values)
+    max_v = max(values)
+    v_range = max_v - min_v or 1  # avoid div-by-zero
+    pad_x = 2
+    pad_y = 2
+    draw_w = width - pad_x * 2
+    draw_h = height - pad_y * 2
+    points = []
+    for i, v in enumerate(values):
+        x = pad_x + i * draw_w / (len(values) - 1)
+        y = pad_y + draw_h - (v - min_v) * draw_h / v_range
+        points.append(f"{x:.1f},{y:.1f}")
+    return (
+        f'<svg width="{width}" height="{height}" class="chart-sparkline">'
+        f'<polyline points="{" ".join(points)}" fill="none" stroke="{color}" '
+        f'stroke-width="{line_width}" stroke-linecap="round" stroke-linejoin="round"/>'
+        f'</svg>'
+    )
+
+
+# ---------------------------------------------------------------------------
+# Pie / Donut — SVG circle with conic-gradient segments via stroke-dasharray
+# ---------------------------------------------------------------------------
+
+_COLORS = [
+    "#4a7", "#5b9", "#6cb", "#7dc", "#8ed", "#e8a", "#d79", "#c68",
+    "#9ad", "#8bc", "#7ab", "#69a", "#a7d", "#b8e", "#c9f",
+]
+
+
+def render_pie_donut(data: list[dict], label_field: str = "label",
+                     value_field: str = "value", donut: bool = False) -> str:
+    if not data:
+        return _no_data()
+    total = sum(d.get(value_field, 0) for d in data)
+    if total <= 0:
+        return _no_data()
+
+    # Limit to 15 slices to avoid visual clutter
+    data = data[:15]
+
+    size = 200
+    center = size / 2
+    r = 70
+    inner_r = 35 if donut else 0
+    stroke_width = r - inner_r
+    # The effective circle drawn by the stroke is at radius (inner_r + stroke_width/2)
+    eff_r = inner_r + stroke_width / 2
+    circumference = 2 * math.pi * eff_r
+
+    slices = []
+    legend = []
+    cumulative = 0.0
+
+    for i, d in enumerate(data):
+        pct = d.get(value_field, 0) / total
+        if pct <= 0:
+            continue
+        seg_len = pct * circumference
+        color = _COLORS[i % len(_COLORS)]
+        label = _esc(d.get(label_field, ""))
+        # Rotational offset: start from top (-90deg)
+        # Convert cumulative fraction to dashoffset
+        offset = circumference - cumulative * circumference
+        slices.append(
+            f'<circle cx="{center}" cy="{center}" r="{eff_r:.1f}" '
+            f'fill="none" stroke="{color}" stroke-width="{stroke_width}" '
+            f'stroke-dasharray="{seg_len:.1f} {circumference - seg_len:.1f}" '
+            f'stroke-dashoffset="-{offset:.1f}" '
+            f'transform="rotate(-90 {center} {center})"/>'
+        )
+        # Use <title> for tooltip on hover
+        slices.append(
+            f'<circle cx="{center}" cy="{center}" r="{eff_r:.1f}" '
+            f'fill="none" stroke="transparent" stroke-width="{stroke_width}" '
+            f'stroke-dasharray="{seg_len:.1f} {circumference - seg_len:.1f}" '
+            f'stroke-dashoffset="-{offset:.1f}" '
+            f'transform="rotate(-90 {center} {center})" class="pie-slice-hit">'
+            f'<title>{label}: {_esc(d.get(value_field, ""))} ({pct*100:.0f}%)</title>'
+            f'</circle>'
+        )
+        legend.append(
+            f'<li><span class="legend-swatch" style="background:{color}"></span>'
+            f'{label} ({pct*100:.0f}%)</li>'
+        )
+        cumulative += pct
+
+    # Center hole for donut
+    center_hole = ""
+    if donut and inner_r > 0:
+        center_hole = (
+            f'<circle cx="{center}" cy="{center}" r="{inner_r}" '
+            f'fill="var(--card, #fff)"/>'
+            f'<text x="{center}" y="{center}" text-anchor="middle" '
+            f'dominant-baseline="central" class="donut-center-text">'
+            f'{total:.0f}</text>'
+        )
+
+    cls = "chart-donut" if donut else "chart-pie"
+    return (
+        f'<div class="{cls}-wrapper">'
+        f'<svg viewBox="0 0 {size} {size}" class="{cls}" '
+        f'width="{size}" height="{size}">'
+        f'{"".join(slices)}'
+        f'{center_hole}'
+        f'</svg>'
+        f'<ul class="chart-legend">{"".join(legend)}</ul>'
+        f'</div>'
+    )
