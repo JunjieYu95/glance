@@ -1,0 +1,14 @@
+# MIT component — status card showing today's task and completion
+[chart]
+type = "status_card"
+title = "Today's MIT"
+
+[chart.options]
+status_field = "today_task"
+label = "Task"
+
+[overview]
+enabled = true
+card_type = "stat"
+label = "MIT"
+data_key = "summary.today_task"

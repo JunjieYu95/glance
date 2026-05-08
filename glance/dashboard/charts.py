@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import html as html_mod
 import math
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Any
 
 
@@ -23,10 +23,14 @@ def _no_data() -> str:
 # Progress bar — horizontal CSS bar with label and value
 # ---------------------------------------------------------------------------
 
-def render_progress_bar(current: float, max_value: float, label: str = "",
-                        unit: str = "", color: str = "var(--ok)") -> str:
+
+def render_progress_bar(
+    current: float, max_value: float, label: str = "", unit: str = "", color: str = "var(--ok)"
+) -> str:
     pct = min(current / max_value * 100, 100) if max_value > 0 else 0.0
-    val_text = f"{current:.0f}{unit}/{max_value:.0f}{unit}" if unit else f"{current:.0f}/{max_value:.0f}"
+    val_text = (
+        f"{current:.0f}{unit}/{max_value:.0f}{unit}" if unit else f"{current:.0f}/{max_value:.0f}"
+    )
     return f"""<div class="chart-progress">
   <span class="progress-label">{_esc(label)}</span>
   <div class="progress-track">
@@ -40,8 +44,10 @@ def render_progress_bar(current: float, max_value: float, label: str = "",
 # Status card — rich card with icon, title, value, and status indicator
 # ---------------------------------------------------------------------------
 
-def render_status_card(title: str, value: str, status: bool | None = None,
-                       status_label: str = "") -> str:
+
+def render_status_card(
+    title: str, value: str, status: bool | None = None, status_label: str = ""
+) -> str:
     if status is True:
         badge_class = "ok"
         badge_text = status_label or "done"
@@ -62,9 +68,14 @@ def render_status_card(title: str, value: str, status: bool | None = None,
 # Bar chart — horizontal CSS bars
 # ---------------------------------------------------------------------------
 
-def render_bar_chart(data: list[dict], label_field: str = "label",
-                     value_field: str = "value", max_value: float | None = None,
-                     color: str = "var(--ok)") -> str:
+
+def render_bar_chart(
+    data: list[dict],
+    label_field: str = "label",
+    value_field: str = "value",
+    max_value: float | None = None,
+    color: str = "var(--ok)",
+) -> str:
     if not data:
         return _no_data()
     values = [d.get(value_field, 0) for d in data]
@@ -89,9 +100,10 @@ def render_bar_chart(data: list[dict], label_field: str = "label",
 # Timeline — vertical CSS timeline with dots
 # ---------------------------------------------------------------------------
 
-def render_timeline(events: list[dict], time_field: str = "time",
-                    title_field: str = "title",
-                    desc_field: str = "") -> str:
+
+def render_timeline(
+    events: list[dict], time_field: str = "time", title_field: str = "title", desc_field: str = ""
+) -> str:
     if not events:
         return _no_data()
     items = []
@@ -114,8 +126,14 @@ def render_timeline(events: list[dict], time_field: str = "time",
 # Sparkline — inline SVG polyline
 # ---------------------------------------------------------------------------
 
-def render_sparkline(values: list[float], width: int = 200, height: int = 40,
-                     color: str = "var(--ok)", line_width: int = 2) -> str:
+
+def render_sparkline(
+    values: list[float],
+    width: int = 200,
+    height: int = 40,
+    color: str = "var(--ok)",
+    line_width: int = 2,
+) -> str:
     if not values:
         return ""
     if len(values) == 1:
@@ -123,7 +141,7 @@ def render_sparkline(values: list[float], width: int = 200, height: int = 40,
         return (
             f'<svg width="{width}" height="{height}" class="chart-sparkline">'
             f'<circle cx="50%" cy="50%" r="3" fill="{color}"/>'
-            f'</svg>'
+            f"</svg>"
         )
     min_v = min(values)
     max_v = max(values)
@@ -141,7 +159,7 @@ def render_sparkline(values: list[float], width: int = 200, height: int = 40,
         f'<svg width="{width}" height="{height}" class="chart-sparkline">'
         f'<polyline points="{" ".join(points)}" fill="none" stroke="{color}" '
         f'stroke-width="{line_width}" stroke-linecap="round" stroke-linejoin="round"/>'
-        f'</svg>'
+        f"</svg>"
     )
 
 
@@ -150,13 +168,27 @@ def render_sparkline(values: list[float], width: int = 200, height: int = 40,
 # ---------------------------------------------------------------------------
 
 _COLORS = [
-    "#4a7", "#5b9", "#6cb", "#7dc", "#8ed", "#e8a", "#d79", "#c68",
-    "#9ad", "#8bc", "#7ab", "#69a", "#a7d", "#b8e", "#c9f",
+    "#4a7",
+    "#5b9",
+    "#6cb",
+    "#7dc",
+    "#8ed",
+    "#e8a",
+    "#d79",
+    "#c68",
+    "#9ad",
+    "#8bc",
+    "#7ab",
+    "#69a",
+    "#a7d",
+    "#b8e",
+    "#c9f",
 ]
 
 
-def render_pie_donut(data: list[dict], label_field: str = "label",
-                     value_field: str = "value", donut: bool = False) -> str:
+def render_pie_donut(
+    data: list[dict], label_field: str = "label", value_field: str = "value", donut: bool = False
+) -> str:
     if not data:
         return _no_data()
     total = sum(d.get(value_field, 0) for d in data)
@@ -203,12 +235,12 @@ def render_pie_donut(data: list[dict], label_field: str = "label",
             f'stroke-dasharray="{seg_len:.1f} {circumference - seg_len:.1f}" '
             f'stroke-dashoffset="-{offset:.1f}" '
             f'transform="rotate(-90 {center} {center})" class="pie-slice-hit">'
-            f'<title>{label}: {_esc(d.get(value_field, ""))} ({pct*100:.0f}%)</title>'
-            f'</circle>'
+            f"<title>{label}: {_esc(d.get(value_field, ''))} ({pct * 100:.0f}%)</title>"
+            f"</circle>"
         )
         legend.append(
             f'<li><span class="legend-swatch" style="background:{color}"></span>'
-            f'{label} ({pct*100:.0f}%)</li>'
+            f"{label} ({pct * 100:.0f}%)</li>"
         )
         cumulative += pct
 
@@ -220,7 +252,7 @@ def render_pie_donut(data: list[dict], label_field: str = "label",
             f'fill="var(--card, #fff)"/>'
             f'<text x="{center}" y="{center}" text-anchor="middle" '
             f'dominant-baseline="central" class="donut-center-text">'
-            f'{total:.0f}</text>'
+            f"{total:.0f}</text>"
         )
 
     cls = "chart-donut" if donut else "chart-pie"
@@ -228,11 +260,11 @@ def render_pie_donut(data: list[dict], label_field: str = "label",
         f'<div class="{cls}-wrapper">'
         f'<svg viewBox="0 0 {size} {size}" class="{cls}" '
         f'width="{size}" height="{size}">'
-        f'{"".join(slices)}'
-        f'{center_hole}'
-        f'</svg>'
+        f"{''.join(slices)}"
+        f"{center_hole}"
+        f"</svg>"
         f'<ul class="chart-legend">{"".join(legend)}</ul>'
-        f'</div>'
+        f"</div>"
     )
 
 
@@ -240,9 +272,14 @@ def render_pie_donut(data: list[dict], label_field: str = "label",
 # Heatmap — CSS grid with colored cells (GitHub contribution graph style)
 # ---------------------------------------------------------------------------
 
-def render_heatmap(data: list[dict], date_field: str = "date",
-                   value_field: str = "value",
-                   weeks: int = 13, color_scheme: str = "green") -> str:
+
+def render_heatmap(
+    data: list[dict],
+    date_field: str = "date",
+    value_field: str = "value",
+    weeks: int = 13,
+    color_scheme: str = "green",
+) -> str:
     if not data:
         return _no_data()
 
@@ -284,9 +321,7 @@ def render_heatmap(data: list[dict], date_field: str = "date",
 
     # Day-of-week headers
     dow = ["Mon", "", "Wed", "", "Fri", "", ""]
-    header_cells = "".join(
-        f'<div class="hm-header">{d}</div>' for d in dow
-    )
+    header_cells = "".join(f'<div class="hm-header">{d}</div>' for d in dow)
 
     # Days of week as rows, weeks as columns
     hm_rows = []
@@ -307,8 +342,8 @@ def render_heatmap(data: list[dict], date_field: str = "date",
     return (
         f'<div class="chart-heatmap">'
         f'<div class="hm-header-row">{header_cells}</div>'
-        f'{"".join(hm_rows)}'
-        f'</div>'
+        f"{''.join(hm_rows)}"
+        f"</div>"
     )
 
 
@@ -317,15 +352,28 @@ def render_heatmap(data: list[dict], date_field: str = "date",
 # ---------------------------------------------------------------------------
 
 _MONTH_NAMES = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
 ]
 
 
-def render_calendar_grid(data: list[dict], date_field: str = "date",
-                         value_field: str = "value",
-                         months_back: int = 3,
-                         color_scheme: str = "green") -> str:
+def render_calendar_grid(
+    data: list[dict],
+    date_field: str = "date",
+    value_field: str = "value",
+    months_back: int = 3,
+    color_scheme: str = "green",
+) -> str:
     if not data:
         return _no_data()
 
@@ -355,8 +403,7 @@ def render_calendar_grid(data: list[dict], date_field: str = "date",
 
         # Day-of-week headers
         dow_header = "".join(
-            f'<div class="cal-dow">{d}</div>'
-            for d in ["M", "T", "W", "T", "F", "S", "S"]
+            f'<div class="cal-dow">{d}</div>' for d in ["M", "T", "W", "T", "F", "S", "S"]
         )
 
         # Fill in days
@@ -398,7 +445,7 @@ def render_calendar_grid(data: list[dict], date_field: str = "date",
             f'<div class="cal-month-title">{_MONTH_NAMES[month_first.month - 1]} {month_first.year}</div>'
             f'<div class="cal-dow-row">{dow_header}</div>'
             f'<div class="cal-grid">{"".join(cells)}</div>'
-            f'</div>'
+            f"</div>"
         )
 
     return f'<div class="chart-calendar-grid">{"".join(months_html)}</div>'
@@ -408,6 +455,7 @@ def render_calendar_grid(data: list[dict], date_field: str = "date",
 # Chart dispatch — selects the right renderer based on chart.toml config
 # ---------------------------------------------------------------------------
 
+
 def _extract_values(payload: dict, config: dict) -> list[dict]:
     """Extract chart data from stats payload based on chart config."""
     chart_data = config.get("chart", {}).get("data", {})
@@ -416,7 +464,6 @@ def _extract_values(payload: dict, config: dict) -> list[dict]:
     if source == "summary":
         summary = payload.get("summary", {})
         value_field = chart_data.get("value_field", "")
-        label_field = chart_data.get("label_field", "")
         # If value_field names a key in summary that is itself a dict,
         # expand it into {label: value} pairs (e.g., by_category_today)
         if value_field and value_field in summary and isinstance(summary[value_field], dict):
@@ -472,7 +519,7 @@ def render_chart(chart_type: str, payload: dict, config: dict) -> str:
             label_field=data_cfg.get("label_field", "label"),
             value_field=data_cfg.get("value_field", "value"),
             max_value=options.get("max_value"),
-            color=options.get("color", "var(--ok)")
+            color=options.get("color", "var(--ok)"),
         )
 
     if chart_type in ("pie", "donut"):
@@ -494,7 +541,9 @@ def render_chart(chart_type: str, payload: dict, config: dict) -> str:
 
     if chart_type == "progress_bar":
         max_v = options.get("max_value", 100)
-        current = float(chart_data[0].get(data_cfg.get("value_field", "value"), 0)) if chart_data else 0
+        current = (
+            float(chart_data[0].get(data_cfg.get("value_field", "value"), 0)) if chart_data else 0
+        )
         return render_progress_bar(
             current=current,
             max_value=max_v,

@@ -21,10 +21,20 @@ def test_scaffold_generates_and_runs():
         env = {**os.environ, "GLANCE_HOME": tmp, "PYTHONPATH": str(REPO_ROOT)}
         try:
             out = subprocess.check_output(
-                [sys.executable, str(SCAFFOLD),
-                 "--name", name, "--title", "Test",
-                 "--field", "count:int", "--field", "note:text"],
-                env=env, cwd=REPO_ROOT,
+                [
+                    sys.executable,
+                    str(SCAFFOLD),
+                    "--name",
+                    name,
+                    "--title",
+                    "Test",
+                    "--field",
+                    "count:int",
+                    "--field",
+                    "note:text",
+                ],
+                env=env,
+                cwd=REPO_ROOT,
             )
             result = json.loads(out)
             assert result["ok"] is True
@@ -33,16 +43,24 @@ def test_scaffold_generates_and_runs():
 
             # Generated log.py works
             log_out = subprocess.check_output(
-                [sys.executable, str(target / "scripts" / "log.py"),
-                 "--count", "3", "--note", "hi"],
-                env=env, cwd=REPO_ROOT,
+                [
+                    sys.executable,
+                    str(target / "scripts" / "log.py"),
+                    "--count",
+                    "3",
+                    "--note",
+                    "hi",
+                ],
+                env=env,
+                cwd=REPO_ROOT,
             )
             assert json.loads(log_out)["ok"] is True
 
             # Generated stats.py works
             stats_out = subprocess.check_output(
                 [sys.executable, str(target / "scripts" / "stats.py")],
-                env=env, cwd=REPO_ROOT,
+                env=env,
+                cwd=REPO_ROOT,
             )
             stats = json.loads(stats_out)
             assert stats["status"] == "ok"

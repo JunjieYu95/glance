@@ -46,6 +46,7 @@ def build_stats() -> dict:
             "today_completed": bool(today_row["completed"]) if today_row else None,
             "completed_last_7d": completed_7d,
             "logged_last_7d": len(last7),
+            "completion_rate_7d": round(completed_7d / len(last7) * 100, 1) if last7 else 0,
         },
         "rows": recent,
     }

@@ -44,9 +44,17 @@ def _run_stats(component) -> dict:
     except subprocess.TimeoutExpired:
         return {"status": "error", "summary": {"error": "stats.py timed out"}, "rows": []}
     except subprocess.CalledProcessError as exc:
-        return {"status": "error", "summary": {"error": exc.stderr.decode("utf-8", "replace")[:500]}, "rows": []}
+        return {
+            "status": "error",
+            "summary": {"error": exc.stderr.decode("utf-8", "replace")[:500]},
+            "rows": [],
+        }
     except json.JSONDecodeError as exc:
-        return {"status": "error", "summary": {"error": f"stats.py emitted non-JSON: {exc}"}, "rows": []}
+        return {
+            "status": "error",
+            "summary": {"error": f"stats.py emitted non-JSON: {exc}"},
+            "rows": [],
+        }
 
 
 def _status_badge(status: str, freshness_hours: float | None, threshold: float | None) -> str:
@@ -67,10 +75,14 @@ def _render_summary(summary: dict) -> str:
     items = []
     for k, v in summary.items():
         if isinstance(v, dict):
-            inner = ", ".join(f"{html.escape(str(ik))}: {html.escape(str(iv))}" for ik, iv in v.items())
+            inner = ", ".join(
+                f"{html.escape(str(ik))}: {html.escape(str(iv))}" for ik, iv in v.items()
+            )
             items.append(f"<div><strong>{html.escape(str(k))}</strong>: {inner}</div>")
         else:
-            items.append(f"<div><strong>{html.escape(str(k))}</strong>: {html.escape(str(v))}</div>")
+            items.append(
+                f"<div><strong>{html.escape(str(k))}</strong>: {html.escape(str(v))}</div>"
+            )
     return "\n".join(items)
 
 
@@ -115,8 +127,8 @@ def _render_panel(component, payload: dict) -> str:
     {badge}
   </header>
   <div class="chart-container">{chart_html}</div>
-  {f'<div class="summary">{summary_html}</div>' if summary_html else ''}
-  {f'<details><summary>Recent</summary>{rows_html}</details>' if payload.get("rows") else ''}
+  {f'<div class="summary">{summary_html}</div>' if summary_html else ""}
+  {f"<details><summary>Recent</summary>{rows_html}</details>" if payload.get("rows") else ""}
 </section>
 """.strip()
     else:
@@ -403,12 +415,14 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
         # Collect overview metadata if chart_config exists with overview section
         chart_config = comp.chart_config
         if chart_config and chart_config.get("overview", {}).get("enabled") is not False:
-            overview_meta.append({
-                "name": comp.name,
-                "title": comp.title,
-                "overview": chart_config["overview"],
-                "payload": payload,
-            })
+            overview_meta.append(
+                {
+                    "name": comp.name,
+                    "title": comp.title,
+                    "overview": chart_config["overview"],
+                    "payload": payload,
+                }
+            )
 
     # Render overview panel
     overview_html = render_overview_panel(overview_meta)
@@ -418,13 +432,9 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
         panels_html.insert(0, overview_html)
 
     template = (
-        TEMPLATE_PATH.read_text(encoding="utf-8")
-        if TEMPLATE_PATH.is_file()
-        else DEFAULT_TEMPLATE
+        TEMPLATE_PATH.read_text(encoding="utf-8") if TEMPLATE_PATH.is_file() else DEFAULT_TEMPLATE
     )
-    html_out = template.replace(
-        "{built_at}", datetime.now().strftime("%Y-%m-%d %H:%M")
-    )
+    html_out = template.replace("{built_at}", datetime.now().strftime("%Y-%m-%d %H:%M"))
     html_out = html_out.replace("{panels}", "\n".join(panels_html))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

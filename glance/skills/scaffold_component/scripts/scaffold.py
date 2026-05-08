@@ -64,7 +64,9 @@ def parse_field(spec: str) -> tuple[str, str]:
     if not re.match(r"^[a-z][a-z0-9_]{0,40}$", name):
         raise ScaffoldError(f"Invalid field name {name!r}")
     if ftype not in FIELD_TYPE_TO_SQL:
-        raise ScaffoldError(f"Unsupported field type {ftype!r}. Use one of: {', '.join(FIELD_TYPE_TO_SQL)}")
+        raise ScaffoldError(
+            f"Unsupported field type {ftype!r}. Use one of: {', '.join(FIELD_TYPE_TO_SQL)}"
+        )
     return name, ftype
 
 
@@ -96,8 +98,13 @@ def build_mapping(args, fields: list[tuple[str, str]]) -> dict:
     fields_sql = "".join(f",\n    {fn}        {FIELD_TYPE_TO_SQL[ft]}" for fn, ft in fields)
     if not any(fn == "note" for fn, _ in fields):
         fields_sql += ",\n    note        TEXT"
-    fields_doc = "\n".join(f"- `{fn}` ({ft})" for fn, ft in fields) or "_No typed fields. Free-form `--note` only._"
-    example_args = " ".join(f"--{fn.replace('_', '-')} <{ft}>" for fn, ft in fields[:2]) or '--note "..."'
+    fields_doc = (
+        "\n".join(f"- `{fn}` ({ft})" for fn, ft in fields)
+        or "_No typed fields. Free-form `--note` only._"
+    )
+    example_args = (
+        " ".join(f"--{fn.replace('_', '-')} <{ft}>" for fn, ft in fields[:2]) or '--note "..."'
+    )
     cron_block = ""
     if args.cron:
         cron_block = (
@@ -172,10 +179,12 @@ def scaffold(args) -> dict:
 
     next_steps = [
         "Run dashboard/build.py to see the new panel.",
-        f'Try: python3 {Path(dest, "scripts", "log.py")} {mapping["example_args"]}',
+        f"Try: python3 {Path(dest, 'scripts', 'log.py')} {mapping['example_args']}",
     ]
     if cron_status and cron_status.get("action") == "skipped":
-        next_steps.append("Cron not registered — fill in ~/.glance/openclaw.toml then re-scaffold with --force.")
+        next_steps.append(
+            "Cron not registered — fill in ~/.glance/openclaw.toml then re-scaffold with --force."
+        )
 
     return {
         "ok": True,
@@ -193,7 +202,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--name", required=True, help="snake_case folder name")
     p.add_argument("--title", help="Dashboard panel title (default: name capitalized)")
     p.add_argument("--description")
-    p.add_argument("--field", action="append", help="name:type, repeatable (int, float, text, bool)")
+    p.add_argument(
+        "--field", action="append", help="name:type, repeatable (int, float, text, bool)"
+    )
     p.add_argument("--order", type=int)
     p.add_argument("--freshness-hours", type=float, default=24, dest="freshness_hours")
     p.add_argument("--cron", help="Cron schedule, e.g. '0 9 * * *'")

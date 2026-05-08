@@ -9,6 +9,7 @@ install script all rely on this contract — nothing else.
 ```
 examples/<name>/
 ├── component.toml         # required, see schema below
+├── chart.toml             # optional, chart visualization config
 ├── SKILL.md               # openclaw skill definition
 ├── scripts/
 │   ├── log.py             # entrypoint for "log/record" actions
@@ -88,6 +89,62 @@ python = ["google-auth", "google-api-python-client"]
 
 - Reads-only. Never writes.
 - Must succeed even if the component has zero data (return `status: "empty"`).
+
+## `chart.toml` schema (optional)
+
+Components may include a `chart.toml` to define how their dashboard panel is
+visualized. If absent, the component renders as a basic text card (unchanged).
+
+```toml
+[chart]
+type = "heatmap"          # bar | pie | donut | heatmap | sparkline |
+                          # status_card | progress_bar | calendar_grid | timeline
+title = "Mood Heatmap"   # Optional chart title override
+
+[chart.data]
+source = "rows"           # "rows" or "summary" — data source in stats payload
+label_field = "name"      # Field for labels (pie/bar segments, timeline titles)
+value_field = "count"     # Field for numeric values
+date_field = "date"       # Required for heatmap/calendar_grid
+time_field = "time"       # Required for timeline
+title_field = "title"     # Required for timeline
+
+[chart.options]
+# Chart-type-specific options (all optional):
+# Bar: max_value (cap), color
+# Pie/Donut: (none — auto-scaled)
+# Sparkline: width, height, color
+# Status Card: status_field, label
+# Progress Bar: max_value, label, unit
+# Heatmap: color_scheme ("green"|"blue"|"red"|"purple")
+# Calendar Grid: color_scheme, months_back
+# Timeline: (fields via chart.data)
+
+[overview]
+enabled = true            # Contribute to the overview panel at top
+card_type = "stat"        # stat | sparkline | badge | progress
+label = "Mood"            # Label in overview card
+data_key = "summary.avg"  # Dot-notation path in stats payload
+suffix = "/10"            # Optional suffix
+```
+
+### Chart Data Contract (stats.py additions)
+
+For chart-enabled components, the `summary` and `rows` in the stats payload
+should include the fields referenced in `chart.toml`:
+
+- **Pie/Donut/Bar**: `summary` should include a dict key (e.g.,
+  `by_category_today` → `{label: value}` dict) referenced by `value_field`.
+- **Heatmap/Calendar Grid**: `rows` should include `date_field` and
+  `value_field` (e.g., `created_at`, `mood_score`).
+- **Sparkline**: `rows` should include `value_field` (numeric).
+- **Status Card**: `summary` should include the `status_field` key.
+- **Progress Bar**: `summary` should include `value_field` (current) and
+  `max_value` is in chart.options.
+- **Timeline**: `rows` should include `time_field` and `title_field`.
+
+Components without `chart.toml` work exactly as before — no payload changes
+required.
 
 ## Migrations
 

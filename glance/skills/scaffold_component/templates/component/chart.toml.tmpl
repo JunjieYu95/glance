@@ -1,0 +1,18 @@
+# {{title}} component — chart configuration for dashboard visualization
+[chart]
+type = "{{chart_type}}"
+title = "{{title}}"
+
+[chart.data]
+source = "summary"
+value_field = "total"
+label_field = "name"
+
+[chart.options]
+
+[overview]
+enabled = true
+card_type = "stat"
+label = "{{title}}"
+data_key = "summary.total"
+suffix = ""

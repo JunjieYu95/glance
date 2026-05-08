@@ -88,9 +88,9 @@ ignore = ["E501"]
 # Component scripts intentionally bootstrap sys.path so they can run standalone
 # (the dashboard subprocesses each stats.py). The deferred imports trigger
 # E402; the bootstrap shuffles import order and trips I001.
-"examples/*/scripts/*.py" = ["E402", "I001"]
-"examples/*/tests/*.py" = ["E402", "I001"]
+"glance/examples/*/scripts/*.py" = ["E402", "I001"]
+"glance/examples/*/tests/*.py" = ["E402", "I001"]
 "glance/core/*/tests/*.py" = ["E402", "I001"]
 "glance/dashboard/build.py" = ["E402", "I001"]
-"examples/**/*.py" = ["E402", "I001"]
+"glance/examples/**/*.py" = ["E402", "I001"]
 "glance/skills/scaffold_component/templates/**" = ["F", "E", "W", "I", "B", "UP"]

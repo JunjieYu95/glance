@@ -10,10 +10,19 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-SUPPORTED_CHART_TYPES = frozenset({
-    "bar", "pie", "donut", "heatmap", "sparkline",
-    "status_card", "progress_bar", "calendar_grid", "timeline",
-})
+SUPPORTED_CHART_TYPES = frozenset(
+    {
+        "bar",
+        "pie",
+        "donut",
+        "heatmap",
+        "sparkline",
+        "status_card",
+        "progress_bar",
+        "calendar_grid",
+        "timeline",
+    }
+)
 
 SUPPORTED_OVERVIEW_TYPES = frozenset({"stat", "sparkline", "badge", "progress"})
 
@@ -84,9 +93,7 @@ def load_chart_config(component_dir: Path) -> dict[str, Any] | None:
                 f"Use one of: {', '.join(sorted(SUPPORTED_OVERVIEW_TYPES))}"
             )
         if ov_type in ("sparkline", "progress") and not overview.get("data_key"):
-            raise ValueError(
-                f"overview card_type {ov_type!r} requires 'data_key'"
-            )
+            raise ValueError(f"overview card_type {ov_type!r} requires 'data_key'")
     else:
         overview = {"enabled": False}
 

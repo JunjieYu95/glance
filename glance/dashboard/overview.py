@@ -40,10 +40,7 @@ def render_overview_panel(components_meta: list[dict]) -> str:
     Returns:
         HTML string for the overview panel section.
     """
-    contributing = [
-        m for m in components_meta
-        if m.get("overview", {}).get("enabled") is not False
-    ]
+    contributing = [m for m in components_meta if m.get("overview", {}).get("enabled") is not False]
     if not contributing:
         return ""
 
@@ -69,21 +66,25 @@ def render_overview_panel(components_meta: list[dict]) -> str:
                     for r in rows[-14:]  # last 14 data points
                     if r.get(value_field) is not None
                 ]
-                spark_svg = render_sparkline(
-                    spark_values,
-                    width=ov.get("width", 120),
-                    height=ov.get("height", 30),
-                    color=color or "var(--ok)",
-                ) if spark_values else ""
+                spark_svg = (
+                    render_sparkline(
+                        spark_values,
+                        width=ov.get("width", 120),
+                        height=ov.get("height", 30),
+                        color=color or "var(--ok)",
+                    )
+                    if spark_values
+                    else ""
+                )
             else:
                 spark_svg = ""
             val_str = _esc(raw_value) if raw_value is not None else "—"
             cards_html.append(
                 f'<div class="ov-card ov-sparkline">'
                 f'<span class="ov-label">{_esc(label)}</span>'
-                f'{spark_svg}'
+                f"{spark_svg}"
                 f'<span class="ov-value">{val_str}{_esc(suffix)}</span>'
-                f'</div>'
+                f"</div>"
             )
 
         elif card_type == "badge":
@@ -93,7 +94,7 @@ def render_overview_panel(components_meta: list[dict]) -> str:
                 f'<div class="ov-card ov-badge">'
                 f'<span class="ov-label">{_esc(label)}</span>'
                 f'<span class="badge {cls} ov-badge-value">{_esc(text)}</span>'
-                f'</div>'
+                f"</div>"
             )
 
         elif card_type == "progress":
@@ -107,7 +108,7 @@ def render_overview_panel(components_meta: list[dict]) -> str:
                 f'<div class="progress-fill" style="width:{pct:.0f}%;'
                 f'background:{color or "var(--ok)"}"></div></div>'
                 f'<span class="ov-value">{current:.0f}{_esc(suffix)}</span>'
-                f'</div>'
+                f"</div>"
             )
 
         else:  # "stat" — default
@@ -124,12 +125,12 @@ def render_overview_panel(components_meta: list[dict]) -> str:
                 f'<div class="ov-card ov-stat">'
                 f'<span class="ov-label">{_esc(label)}</span>'
                 f'<span class="ov-value">{_esc(val_str)}</span>'
-                f'</div>'
+                f"</div>"
             )
 
     return (
         f'<section class="panel overview-panel">'
-        f'<header><h2>Overview</h2></header>'
+        f"<header><h2>Overview</h2></header>"
         f'<div class="overview-grid">{"".join(cards_html)}</div>'
-        f'</section>'
+        f"</section>"
     )
