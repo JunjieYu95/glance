@@ -47,6 +47,8 @@ jobs:
           GLANCE_HOME: ${{ github.workspace }}/demo_tmp
         run: |
           mkdir -p "$GLANCE_HOME"
-          python glance/examples/demo-data/seed.py
-          glance dashboard build --out /tmp/index.html
+          glance setup
+          glance scaffold --name test_tracker --field count:int 2>&1
+          glance scaffold --name demo_habit --field done:bool --chart-type calendar_grid 2>&1
+          glance dashboard build --out /tmp/index.html 2>&1
           test -s /tmp/index.html
