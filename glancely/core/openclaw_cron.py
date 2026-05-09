@@ -41,9 +41,9 @@ def load_user_config() -> dict[str, str]:
         raise CronConfigMissing(
             f"Missing {PR_OPENCLAW_CONFIG}. Run install.sh to configure your "
             f"openclaw agent_id / session_target / session_key, or set them by hand:\n"
-            f'  agent_id       = "ceo_secretary"\n'
+            f'  agent_id       = "your_agent_id"\n'
             f'  session_target = "main"\n'
-            f'  session_key    = "agent:ceo_secretary:telegram:direct:<your-id>"'
+            f'  session_key    = "agent:your_agent_id:telegram:direct:<your-id>"'
         )
     with PR_OPENCLAW_CONFIG.open("rb") as fh:
         cfg = tomllib.load(fh)

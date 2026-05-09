@@ -2279,7 +2279,7 @@ suffix = ""
     (comp_dir / "scripts" / "stats.py").write_text("""\
 #!/usr/bin/env python3
 import json, sys
-sys.path.insert(0, "/Users/junjieyu/.openclaw/workspace/employees/ceo_secretary/projects/glancely")
+sys.path.insert(0, "/path/to/glancely/repo")
 from glancely.core.storage import get_connection
 with get_connection() as conn:
     conn.execute("INSERT OR IGNORE INTO test_chart_entries (name, count) VALUES ('alpha', 10), ('beta', 20), ('gamma', 15)")
