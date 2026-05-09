@@ -40,6 +40,8 @@ def build_stats() -> dict:
     if last_row:
         from datetime import datetime, timezone
         last_dt = datetime.fromisoformat(last_row["created_at"])
+        if last_dt.tzinfo is None:
+            last_dt = last_dt.replace(tzinfo=timezone.utc)
         now_utc = datetime.now(timezone.utc)
         freshness_hours = round((now_utc - last_dt).total_seconds() / 3600.0, 2)
 
