@@ -13,7 +13,7 @@
 ## File Structure Map
 
 ```
-glance/
+glancely/
 ├── dashboard/
 │   ├── build.py              # MODIFIED — uses chart configs, renders overview
 │   ├── charts.py             # NEW — all CSS/SVG chart rendering functions
@@ -108,7 +108,7 @@ The file is written in Task 2. This step confirms the schema design above is com
 ### Task 2: Create Chart Config Loader (`load_chart_config.py`)
 
 **Files:**
-- Create: `glance/dashboard/load_chart_config.py`
+- Create: `glancely/dashboard/load_chart_config.py`
 - Create: `tests/test_dashboard_charts.py` (partial — config loading tests)
 
 - [ ] **Step 1: Write failing tests for chart config loading**
@@ -119,14 +119,14 @@ import pytest
 from pathlib import Path
 
 def test_load_chart_config_returns_none_for_missing_file(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
     comp_dir = tmp_path / "no_config"
     comp_dir.mkdir()
     result = load_chart_config(comp_dir)
     assert result is None
 
 def test_load_chart_config_parses_valid_heatmap(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
     comp_dir = tmp_path / "valid_heatmap"
     comp_dir.mkdir()
     (comp_dir / "chart.toml").write_text("""\
@@ -158,7 +158,7 @@ suffix = "/10"
     assert result["overview"]["card_type"] == "sparkline"
 
 def test_load_chart_config_rejects_invalid_type(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
     comp_dir = tmp_path / "invalid"
     comp_dir.mkdir()
     (comp_dir / "chart.toml").write_text("""\
@@ -171,7 +171,7 @@ source = "rows"
         load_chart_config(comp_dir)
 
 def test_load_chart_config_missing_data_section(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
     comp_dir = tmp_path / "no_data"
     comp_dir.mkdir()
     (comp_dir / "chart.toml").write_text("""\
@@ -190,7 +190,7 @@ Expected: 4 test failures (ImportError or function not defined)
 - [ ] **Step 3: Implement `load_chart_config.py`**
 
 ```python
-# glance/dashboard/load_chart_config.py
+# glancely/dashboard/load_chart_config.py
 """Load and validate chart.toml per component directory."""
 
 from __future__ import annotations
@@ -294,7 +294,7 @@ Expected: 4 tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/load_chart_config.py tests/test_dashboard_charts.py
+git add glancely/dashboard/load_chart_config.py tests/test_dashboard_charts.py
 git commit -m "feat(dashboard): add chart.toml config loader with validation"
 ```
 
@@ -303,7 +303,7 @@ git commit -m "feat(dashboard): add chart.toml config loader with validation"
 ### Task 3: Add `chart_config` Property to `Component` Dataclass
 
 **Files:**
-- Modify: `glance/core/registry/discover.py` — add chart_config loading
+- Modify: `glancely/core/registry/discover.py` — add chart_config loading
 
 - [ ] **Step 1: Read current `discover.py`**
 
@@ -318,7 +318,7 @@ Insert after the `auth` property in `discover.py`:
     @property
     def chart_config(self) -> dict | None:
         """Chart configuration from chart.toml, or None if no chart config."""
-        from glance.dashboard.load_chart_config import load_chart_config
+        from glancely.dashboard.load_chart_config import load_chart_config
         return load_chart_config(self.path)
 ```
 
@@ -326,13 +326,13 @@ This is a property (lazy-loaded per access) so the import of `load_chart_config`
 
 - [ ] **Step 3: Verify existing tests still pass**
 
-Run: `python -m pytest glance/core/registry/tests/ -v`
+Run: `python -m pytest glancely/core/registry/tests/ -v`
 Expected: All existing tests PASS
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add glance/core/registry/discover.py
+git add glancely/core/registry/discover.py
 git commit -m "feat(registry): add chart_config property to Component dataclass"
 ```
 
@@ -341,7 +341,7 @@ git commit -m "feat(registry): add chart_config property to Component dataclass"
 ### Task 4: Create Chart Rendering Engine (`charts.py` — Part 1: Stateless Charts)
 
 **Files:**
-- Create: `glance/dashboard/charts.py`
+- Create: `glancely/dashboard/charts.py`
 - Modify: `tests/test_dashboard_charts.py` (add rendering tests)
 
 This task implements the stateless chart renderers: bar, progress_bar, status_card, timeline.
@@ -355,19 +355,19 @@ import html
 import pytest
 
 def test_render_progress_bar():
-    from glance.dashboard.charts import render_progress_bar
+    from glancely.dashboard.charts import render_progress_bar
     html_out = render_progress_bar(current=7, max_value=10, label="Done")
     assert 'style="width:70%"' in html_out
     assert "Done" in html_out
     assert "7/10" in html_out
 
 def test_render_progress_bar_zero_max():
-    from glance.dashboard.charts import render_progress_bar
+    from glancely.dashboard.charts import render_progress_bar
     html_out = render_progress_bar(current=0, max_value=0, label="N/A")
     assert 'style="width:0%"' in html_out
 
 def test_render_status_card_ok():
-    from glance.dashboard.charts import render_status_card
+    from glancely.dashboard.charts import render_status_card
     html_out = render_status_card(
         title="Today's MIT",
         value="Design the API",
@@ -378,7 +378,7 @@ def test_render_status_card_ok():
     assert "ok" in html_out
 
 def test_render_status_card_incomplete():
-    from glance.dashboard.charts import render_status_card
+    from glancely.dashboard.charts import render_status_card
     html_out = render_status_card(
         title="Today's MIT",
         value="Not set",
@@ -387,19 +387,19 @@ def test_render_status_card_incomplete():
     assert "bad" in html_out or "muted" in html_out
 
 def test_render_bar_chart():
-    from glance.dashboard.charts import render_bar_chart
+    from glancely.dashboard.charts import render_bar_chart
     data = [{"label": "prod", "value": 240}, {"label": "admin", "value": 72}]
     html_out = render_bar_chart(data, label_field="label", value_field="value")
     assert "prod" in html_out
     assert "240" in html_out
 
 def test_render_bar_chart_empty():
-    from glance.dashboard.charts import render_bar_chart
+    from glancely.dashboard.charts import render_bar_chart
     html_out = render_bar_chart([], label_field="x", value_field="y")
     assert "No data" in html_out or "no data" in html_out
 
 def test_render_timeline():
-    from glance.dashboard.charts import render_timeline
+    from glancely.dashboard.charts import render_timeline
     events = [
         {"time": "14:30", "title": "Wrapper refactor"},
         {"time": "15:45", "title": "Code review"},
@@ -417,7 +417,7 @@ Expected: ALL FAIL (ImportError or function not defined)
 - [ ] **Step 3: Implement stateless chart renderers**
 
 ```python
-# glance/dashboard/charts.py
+# glancely/dashboard/charts.py
 """Pure CSS/SVG chart renderers. Zero JavaScript dependencies.
 
 Each function returns an HTML string to be embedded in a dashboard panel.
@@ -536,7 +536,7 @@ Expected: All 7 stateless chart tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/charts.py tests/test_dashboard_charts.py
+git add glancely/dashboard/charts.py tests/test_dashboard_charts.py
 git commit -m "feat(charts): add stateless renderers (bar, progress, status, timeline)"
 ```
 
@@ -545,7 +545,7 @@ git commit -m "feat(charts): add stateless renderers (bar, progress, status, tim
 ### Task 5: Chart Rendering Engine — Part 2: SVG Charts
 
 **Files:**
-- Modify: `glance/dashboard/charts.py` (add sparkline, pie, donut)
+- Modify: `glancely/dashboard/charts.py` (add sparkline, pie, donut)
 - Modify: `tests/test_dashboard_charts.py` (add SVG chart tests)
 
 - [ ] **Step 1: Write failing tests for SVG charts**
@@ -554,25 +554,25 @@ Add to `tests/test_dashboard_charts.py`:
 
 ```python
 def test_render_sparkline():
-    from glance.dashboard.charts import render_sparkline
+    from glancely.dashboard.charts import render_sparkline
     html_out = render_sparkline([3, 7, 5, 9, 6, 8, 7], width=200, height=40)
     assert "<svg" in html_out
     assert "<polyline" in html_out
     assert 'points="' in html_out
 
 def test_render_sparkline_single_value():
-    from glance.dashboard.charts import render_sparkline
+    from glancely.dashboard.charts import render_sparkline
     html_out = render_sparkline([5], width=200, height=40)
     assert "<svg" in html_out
     # Should still produce something valid
 
 def test_render_sparkline_empty():
-    from glance.dashboard.charts import render_sparkline
+    from glancely.dashboard.charts import render_sparkline
     html_out = render_sparkline([], width=200, height=40)
     assert html_out == ""
 
 def test_render_pie_chart():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
     data = [{"label": "prod", "value": 240}, {"label": "admin", "value": 72}, {"label": "meetings", "value": 88}]
     html_out = render_pie_donut(data, label_field="label", value_field="value", donut=False)
     assert "<svg" in html_out
@@ -580,19 +580,19 @@ def test_render_pie_chart():
     assert 'class="chart-pie"' in html_out
 
 def test_render_donut_chart():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
     data = [{"label": "prod", "value": 240}, {"label": "admin", "value": 72}]
     html_out = render_pie_donut(data, label_field="label", value_field="value", donut=True)
     assert "<svg" in html_out
     assert 'class="chart-donut"' in html_out
 
 def test_render_pie_donut_empty():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
     html_out = render_pie_donut([], label_field="x", value_field="y")
     assert "No data" in html_out
 
 def test_render_pie_donut_zero_total():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
     data = [{"label": "a", "value": 0}, {"label": "b", "value": 0}]
     html_out = render_pie_donut(data, label_field="label", value_field="value")
     assert "No data" in html_out
@@ -605,7 +605,7 @@ Expected: ALL FAIL
 
 - [ ] **Step 3: Implement SVG chart renderers**
 
-Add to `glance/dashboard/charts.py`:
+Add to `glancely/dashboard/charts.py`:
 
 ```python
 import math
@@ -745,7 +745,7 @@ Expected: All 7 SVG chart tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/charts.py tests/test_dashboard_charts.py
+git add glancely/dashboard/charts.py tests/test_dashboard_charts.py
 git commit -m "feat(charts): add SVG renderers (sparkline, pie, donut)"
 
 # Note: Had to use type: ignore for math import due to linter
@@ -757,7 +757,7 @@ git commit -m "feat(charts): add SVG renderers (sparkline, pie, donut)"
 ### Task 6: Chart Rendering Engine — Part 3: Grid Charts
 
 **Files:**
-- Modify: `glance/dashboard/charts.py` (add heatmap, calendar_grid)
+- Modify: `glancely/dashboard/charts.py` (add heatmap, calendar_grid)
 - Modify: `tests/test_dashboard_charts.py` (add grid chart tests)
 
 - [ ] **Step 1: Write failing tests for grid charts**
@@ -766,7 +766,7 @@ Add to `tests/test_dashboard_charts.py`:
 
 ```python
 def test_render_heatmap():
-    from glance.dashboard.charts import render_heatmap
+    from glancely.dashboard.charts import render_heatmap
     rows = [
         {"date": "2026-05-01", "score": 3},
         {"date": "2026-05-02", "score": 7},
@@ -777,12 +777,12 @@ def test_render_heatmap():
     assert "Mon" in html_out or "Tue" in html_out or "heatmap" in html_out
 
 def test_render_heatmap_empty():
-    from glance.dashboard.charts import render_heatmap
+    from glancely.dashboard.charts import render_heatmap
     html_out = render_heatmap([], date_field="date", value_field="val")
     assert "No data" in html_out
 
 def test_render_calendar_grid():
-    from glance.dashboard.charts import render_calendar_grid
+    from glancely.dashboard.charts import render_calendar_grid
     rows = [
         {"date": "2026-05-01", "count": 2},
         {"date": "2026-05-05", "count": 5},
@@ -792,7 +792,7 @@ def test_render_calendar_grid():
     assert "calendar" in html_out.lower() or "May" in html_out
 
 def test_render_calendar_grid_empty():
-    from glance.dashboard.charts import render_calendar_grid
+    from glancely.dashboard.charts import render_calendar_grid
     html_out = render_calendar_grid([], date_field="date", value_field="val")
     assert "No data" in html_out
 ```
@@ -804,7 +804,7 @@ Expected: ALL FAIL
 
 - [ ] **Step 3: Implement grid chart renderers**
 
-Add to `glance/dashboard/charts.py`:
+Add to `glancely/dashboard/charts.py`:
 
 ```python
 from datetime import date, datetime, timedelta
@@ -1001,7 +1001,7 @@ Expected: All 4 grid chart tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/charts.py tests/test_dashboard_charts.py
+git add glancely/dashboard/charts.py tests/test_dashboard_charts.py
 git commit -m "feat(charts): add grid renderers (heatmap, calendar_grid)"
 ```
 
@@ -1010,7 +1010,7 @@ git commit -m "feat(charts): add grid renderers (heatmap, calendar_grid)"
 ### Task 7: Chart Dispatch Function in `charts.py`
 
 **Files:**
-- Modify: `glance/dashboard/charts.py` (add `render_chart` dispatch)
+- Modify: `glancely/dashboard/charts.py` (add `render_chart` dispatch)
 - Modify: `tests/test_dashboard_charts.py` (add dispatch tests)
 
 - [ ] **Step 1: Write failing test for the dispatch function**
@@ -1019,7 +1019,7 @@ Add to `tests/test_dashboard_charts.py`:
 
 ```python
 def test_render_chart_dispatches_to_correct_renderer():
-    from glance.dashboard.charts import render_chart
+    from glancely.dashboard.charts import render_chart
 
     # Test bar chart dispatch
     result = render_chart(
@@ -1037,7 +1037,7 @@ def test_render_chart_dispatches_to_correct_renderer():
     assert len(result) > 0
 
 def test_render_chart_unknown_type_falls_back():
-    from glance.dashboard.charts import render_chart
+    from glancely.dashboard.charts import render_chart
     # Should not crash for unsupported type — return basic card HTML
     result = render_chart("unknown", {"summary": {"x": 1}, "rows": []}, {})
     assert isinstance(result, str)
@@ -1050,7 +1050,7 @@ Expected: FAIL (function not defined)
 
 - [ ] **Step 3: Implement `render_chart` dispatch function**
 
-Add to `glance/dashboard/charts.py`:
+Add to `glancely/dashboard/charts.py`:
 
 ```python
 # ---------------------------------------------------------------------------
@@ -1187,7 +1187,7 @@ Expected: All dispatch tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/charts.py tests/test_dashboard_charts.py
+git add glancely/dashboard/charts.py tests/test_dashboard_charts.py
 git commit -m "feat(charts): add render_chart dispatch function"
 ```
 
@@ -1196,7 +1196,7 @@ git commit -m "feat(charts): add render_chart dispatch function"
 ### Task 8: Overview Panel Renderer
 
 **Files:**
-- Create: `glance/dashboard/overview.py`
+- Create: `glancely/dashboard/overview.py`
 - Modify: `tests/test_dashboard_charts.py` (add overview tests)
 
 - [ ] **Step 1: Write failing test for the overview renderer**
@@ -1205,12 +1205,12 @@ Add to `tests/test_dashboard_charts.py`:
 
 ```python
 def test_render_overview_panel_empty():
-    from glance.dashboard.overview import render_overview_panel
+    from glancely.dashboard.overview import render_overview_panel
     html_out = render_overview_panel([])  # no components
     assert isinstance(html_out, str)
 
 def test_render_overview_panel_with_components():
-    from glance.dashboard.overview import render_overview_panel
+    from glancely.dashboard.overview import render_overview_panel
     components_meta = [
         {
             "name": "mood",
@@ -1248,13 +1248,13 @@ def test_render_overview_panel_with_components():
     assert "Design API" in html_out or "MIT" in html_out
 
 def test_resolve_data_key_nested():
-    from glance.dashboard.overview import resolve_data_key
+    from glancely.dashboard.overview import resolve_data_key
     payload = {"summary": {"by_category": {"prod": 240, "admin": 72}}}
     val = resolve_data_key(payload, "summary.by_category")
     assert val == {"prod": 240, "admin": 72}
 
 def test_resolve_data_key_top():
-    from glance.dashboard.overview import resolve_data_key
+    from glancely.dashboard.overview import resolve_data_key
     payload = {"status": "ok"}
     val = resolve_data_key(payload, "status")
     assert val == "ok"
@@ -1268,7 +1268,7 @@ Expected: ALL FAIL
 - [ ] **Step 3: Implement `overview.py`**
 
 ```python
-# glance/dashboard/overview.py
+# glancely/dashboard/overview.py
 """Overview panel — composites key signals from all tracker components."""
 
 from __future__ import annotations
@@ -1276,7 +1276,7 @@ from __future__ import annotations
 import html as html_mod
 from typing import Any
 
-from glance.dashboard.charts import render_sparkline
+from glancely.dashboard.charts import render_sparkline
 
 
 def _esc(s: Any) -> str:
@@ -1414,7 +1414,7 @@ Expected: All 4 overview tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/overview.py tests/test_dashboard_charts.py
+git add glancely/dashboard/overview.py tests/test_dashboard_charts.py
 git commit -m "feat(dashboard): add overview panel renderer with data key resolution"
 ```
 
@@ -1423,7 +1423,7 @@ git commit -m "feat(dashboard): add overview panel renderer with data key resolu
 ### Task 9: Integrate Chart System into Dashboard Builder (`build.py`)
 
 **Files:**
-- Modify: `glance/dashboard/build.py` — integrate chart rendering and overview panel
+- Modify: `glancely/dashboard/build.py` — integrate chart rendering and overview panel
 
 - [ ] **Step 1: Write failing integration test**
 
@@ -1438,7 +1438,7 @@ from pathlib import Path
 
 def test_render_panel_with_chart_config(tmp_path):
     """Panel should render as chart when chart_config is present."""
-    from glance.dashboard.build import _render_panel
+    from glancely.dashboard.build import _render_panel
     from unittest.mock import Mock
 
     component = Mock()
@@ -1465,7 +1465,7 @@ def test_render_panel_with_chart_config(tmp_path):
 
 def test_render_panel_without_chart_config(tmp_path):
     """Panel should render as basic card when no chart_config (backward compat)."""
-    from glance.dashboard.build import _render_panel
+    from glancely.dashboard.build import _render_panel
     from unittest.mock import Mock
 
     component = Mock()
@@ -1511,9 +1511,9 @@ def test_build_includes_overview_panel(tmp_path, monkeypatch):
         comp.stats_script.is_file.return_value = True
         mock_comps.append(comp)
 
-    with patch("glance.dashboard.build.discover_components", return_value=mock_comps), \
-         patch("glance.dashboard.build.apply_all_migrations"), \
-         patch("glance.dashboard.build._run_stats") as mock_stats:
+    with patch("glancely.dashboard.build.discover_components", return_value=mock_comps), \
+         patch("glancely.dashboard.build.apply_all_migrations"), \
+         patch("glancely.dashboard.build._run_stats") as mock_stats:
         mock_stats.side_effect = [
             {"status": "ok", "freshness_hours": 1.0, "summary": {"avg_score_7d": 7.2, "total": 100},
              "rows": [{"score": 7}, {"score": 8}]},
@@ -1521,7 +1521,7 @@ def test_build_includes_overview_panel(tmp_path, monkeypatch):
              "rows": []},
         ]
 
-        from glance.dashboard.build import build
+        from glancely.dashboard.build import build
         result = build(output_path=output, run_migrations=False)
 
         assert output.exists()
@@ -1542,8 +1542,8 @@ Replace `_render_panel` function and add imports:
 
 ```python
 # At top of build.py, add imports:
-from glance.dashboard.charts import render_chart, _no_data
-from glance.dashboard.overview import render_overview_panel
+from glancely.dashboard.charts import render_chart, _no_data
+from glancely.dashboard.overview import render_overview_panel
 
 # Replace _render_panel (lines 91–108):
 def _render_panel(component, payload: dict) -> str:
@@ -1596,7 +1596,7 @@ Modify the `build()` function to collect component metadata for the overview pan
 ```python
 # In build() function (around line 159–176), replace the loop:
 def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
-    from glance.core.storage.db import GLANCE_HOME
+    from glancely.core.storage.db import GLANCE_HOME
 
     if output_path is None:
         output_path = GLANCE_HOME / "dashboard" / "index.html"
@@ -1659,7 +1659,7 @@ Expected: All 3 integration tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/dashboard/build.py tests/test_dashboard_build.py
+git add glancely/dashboard/build.py tests/test_dashboard_build.py
 git commit -m "feat(dashboard): integrate chart system into build pipeline"
 ```
 
@@ -1668,8 +1668,8 @@ git commit -m "feat(dashboard): integrate chart system into build pipeline"
 ### Task 10: Add CSS for All Chart Types to Dashboard Template
 
 **Files:**
-- Modify: `glance/dashboard/build.py` — expand DEFAULT_TEMPLATE CSS
-- Create: `glance/dashboard/template.html` — optional external template file
+- Modify: `glancely/dashboard/build.py` — expand DEFAULT_TEMPLATE CSS
+- Create: `glancely/dashboard/template.html` — optional external template file
 
 - [ ] **Step 1: Copy current DEFAULT_TEMPLATE CSS and add chart CSS rules**
 
@@ -1680,7 +1680,7 @@ DEFAULT_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>glance — Dashboard</title>
+  <title>glancely — Dashboard</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -1913,7 +1913,7 @@ DEFAULT_TEMPLATE = """<!doctype html>
   </style>
 </head>
 <body>
-  <h1>glance</h1>
+  <h1>glancely</h1>
   <div class="built-at">Built {built_at}</div>
   <div class="grid">{panels}</div>
 </body>
@@ -1923,13 +1923,13 @@ DEFAULT_TEMPLATE = """<!doctype html>
 
 - [ ] **Step 2: Verify template is syntactically valid Python**
 
-Run: `python -c "from glance.dashboard.build import DEFAULT_TEMPLATE; print('OK')"`
+Run: `python -c "from glancely.dashboard.build import DEFAULT_TEMPLATE; print('OK')"`
 Expected: OK (no SyntaxError)
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add glance/dashboard/build.py
+git add glancely/dashboard/build.py
 git commit -m "feat(dashboard): add comprehensive CSS for all chart types and overview"
 ```
 
@@ -1938,16 +1938,16 @@ git commit -m "feat(dashboard): add comprehensive CSS for all chart types and ov
 ### Task 11: Create `chart.toml` for Each Example Component
 
 **Files:**
-- Create: `glance/examples/mood/chart.toml`
-- Create: `glance/examples/reminder/chart.toml`
-- Create: `glance/examples/mit/chart.toml`
-- Create: `glance/examples/diary_logger/chart.toml`
-- Modify: `glance/examples/mood/scripts/stats.py` — add chart data fields
-- Modify: `glance/examples/reminder/scripts/stats.py` — add chart data fields
-- Modify: `glance/examples/mit/scripts/stats.py` — add chart data fields
-- Modify: `glance/examples/diary_logger/scripts/stats.py` — add chart data fields
+- Create: `glancely/examples/mood/chart.toml`
+- Create: `glancely/examples/reminder/chart.toml`
+- Create: `glancely/examples/mit/chart.toml`
+- Create: `glancely/examples/diary_logger/chart.toml`
+- Modify: `glancely/examples/mood/scripts/stats.py` — add chart data fields
+- Modify: `glancely/examples/reminder/scripts/stats.py` — add chart data fields
+- Modify: `glancely/examples/mit/scripts/stats.py` — add chart data fields
+- Modify: `glancely/examples/diary_logger/scripts/stats.py` — add chart data fields
 
-- [ ] **Step 1: Create `glance/examples/mood/chart.toml`**
+- [ ] **Step 1: Create `glancely/examples/mood/chart.toml`**
 
 ```toml
 # Mood component — heatmap of mood scores over time
@@ -1976,13 +1976,13 @@ height = 30
 color = "#4a7"
 ```
 
-- [ ] **Step 2: Update `glance/examples/mood/scripts/stats.py`**
+- [ ] **Step 2: Update `glancely/examples/mood/scripts/stats.py`**
 
 The current stats.py for mood returns `created_at` in rows — which is the date_field needed. No changes needed for the row data. But let's ensure the rows return consistent field names. The current rows return `created_at, mood_score, mood_label, note` — all fields needed for the heatmap are already present. The overview uses `summary.avg_score_7d` which is already returned.
 
 No changes needed for mood stats.py — it already returns all required fields.
 
-- [ ] **Step 3: Create `glance/examples/reminder/chart.toml`**
+- [ ] **Step 3: Create `glancely/examples/reminder/chart.toml`**
 
 ```toml
 # Reminder component — list with status badges + count overview
@@ -2006,7 +2006,7 @@ label = "Pending"
 data_key = "summary.active"
 ```
 
-- [ ] **Step 4: Update `glance/examples/reminder/scripts/stats.py`**
+- [ ] **Step 4: Update `glancely/examples/reminder/scripts/stats.py`**
 
 The current stats.py returns `id, title, due_date, status` in rows — the timeline needs `time_field` (due_date) and `title_field` (title). These already exist. Add `status` as a desc_field for richer timeline display:
 
@@ -2014,7 +2014,7 @@ Modify line 41 (the return statement) — no changes needed; the existing fields
 
 Actually, the `render_chart` dispatch uses `_extract_values` which reads `rows` directly. The existing row fields (`id, title, due_date, status`) match the chart config's `time_field` (due_date) and `title_field` (title). No changes needed.
 
-- [ ] **Step 5: Create `glance/examples/mit/chart.toml`**
+- [ ] **Step 5: Create `glancely/examples/mit/chart.toml`**
 
 ```toml
 # MIT component — status card showing today's task and completion
@@ -2033,7 +2033,7 @@ label = "MIT"
 data_key = "summary.today_task"
 ```
 
-- [ ] **Step 6: Update `glance/examples/mit/scripts/stats.py`**
+- [ ] **Step 6: Update `glancely/examples/mit/scripts/stats.py`**
 
 Current stats.py returns `summary.today_task` (string) and `summary.today_completed` (bool). The status_card reads `status_field` from summary. Since today_task is a string (not a bool), the status_card will treat it as a value to display. Let's enhance MIT to also return a progress metric:
 
@@ -2055,7 +2055,7 @@ Modify the return dict in `build_stats()` (around line 41–51):
     }
 ```
 
-- [ ] **Step 7: Create `glance/examples/diary_logger/chart.toml`**
+- [ ] **Step 7: Create `glancely/examples/diary_logger/chart.toml`**
 
 ```toml
 # Diary Logger — donut chart for today's category breakdown
@@ -2077,7 +2077,7 @@ data_key = "summary.total_minutes_today"
 suffix = " min"
 ```
 
-- [ ] **Step 8: Update `glance/examples/diary_logger/scripts/stats.py`**
+- [ ] **Step 8: Update `glancely/examples/diary_logger/scripts/stats.py`**
 
 Current stats.py returns `summary.by_category_today` as a dict like `{"prod": 240, "admin": 72}`. The `_extract_values` function handles nested dicts in summary — it expands them into `[{label: "prod", value: 240}, ...]` format. No changes needed.
 
@@ -2086,9 +2086,9 @@ Current stats.py returns `summary.by_category_today` as a dict like `{"prod": 24
 Run each stats script:
 
 ```bash
-python3 glance/examples/mood/scripts/stats.py
-python3 glance/examples/reminder/scripts/stats.py
-python3 glance/examples/mit/scripts/stats.py
+python3 glancely/examples/mood/scripts/stats.py
+python3 glancely/examples/reminder/scripts/stats.py
+python3 glancely/examples/mit/scripts/stats.py
 # Diary requires Google Calendar credentials — skip if not configured
 ```
 
@@ -2097,11 +2097,11 @@ Expected: Each prints valid JSON to stdout.
 - [ ] **Step 10: Commit**
 
 ```bash
-git add glance/examples/mood/chart.toml \
-        glance/examples/reminder/chart.toml \
-        glance/examples/mit/chart.toml \
-        glance/examples/diary_logger/chart.toml \
-        glance/examples/mit/scripts/stats.py
+git add glancely/examples/mood/chart.toml \
+        glancely/examples/reminder/chart.toml \
+        glancely/examples/mit/chart.toml \
+        glancely/examples/diary_logger/chart.toml \
+        glancely/examples/mit/scripts/stats.py
 git commit -m "feat(examples): add chart.toml configs for all example components"
 ```
 
@@ -2110,8 +2110,8 @@ git commit -m "feat(examples): add chart.toml configs for all example components
 ### Task 12: Add Chart Config to Scaffold Templates
 
 **Files:**
-- Create: `glance/skills/scaffold_component/templates/component/chart.toml.tmpl`
-- Modify: `glance/skills/scaffold_component/scripts/scaffold.py` — handle chart template
+- Create: `glancely/skills/scaffold_component/templates/component/chart.toml.tmpl`
+- Modify: `glancely/skills/scaffold_component/scripts/scaffold.py` — handle chart template
 
 - [ ] **Step 1: Create `chart.toml.tmpl` scaffold template**
 
@@ -2158,11 +2158,11 @@ p.add_argument("--chart-type", default="bar",
 
 - [ ] **Step 3: Verify scaffold produces chart.toml**
 
-Run: `python3 -m glance.skills.scaffold_component.scripts.scaffold --name test_chart --title "Test Chart" --field count:int --force`
+Run: `python3 -m glancely.skills.scaffold_component.scripts.scaffold --name test_chart --title "Test Chart" --field count:int --force`
 
 Then check that the output directory contains `chart.toml`:
 ```bash
-ls ~/.glance/components/test_chart/chart.toml
+ls ~/.glancely/components/test_chart/chart.toml
 ```
 
 Expected: File exists with rendered `{{title}}` → `Test Chart`.
@@ -2170,14 +2170,14 @@ Expected: File exists with rendered `{{title}}` → `Test Chart`.
 - [ ] **Step 4: Clean up test scaffold**
 
 ```bash
-rm -rf ~/.glance/components/test_chart
+rm -rf ~/.glancely/components/test_chart
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add glance/skills/scaffold_component/templates/component/chart.toml.tmpl \
-        glance/skills/scaffold_component/scripts/scaffold.py
+git add glancely/skills/scaffold_component/templates/component/chart.toml.tmpl \
+        glancely/skills/scaffold_component/scripts/scaffold.py
 git commit -m "feat(scaffold): add chart.toml.tmpl template and --chart-type option"
 ```
 
@@ -2279,8 +2279,8 @@ suffix = ""
     (comp_dir / "scripts" / "stats.py").write_text("""\
 #!/usr/bin/env python3
 import json, sys
-sys.path.insert(0, "/Users/junjieyu/.openclaw/workspace/employees/ceo_secretary/projects/glance")
-from glance.core.storage import get_connection
+sys.path.insert(0, "/Users/junjieyu/.openclaw/workspace/employees/ceo_secretary/projects/glancely")
+from glancely.core.storage import get_connection
 with get_connection() as conn:
     conn.execute("INSERT OR IGNORE INTO test_chart_entries (name, count) VALUES ('alpha', 10), ('beta', 20), ('gamma', 15)")
     conn.commit()
@@ -2292,11 +2292,11 @@ print(json.dumps({"freshness_hours":1,"status":"ok","summary":{"total":total},"r
     output = tmp_path / "dashboard" / "index.html"
 
     # Run the actual build (not mocked)
-    from glance.dashboard.build import build
-    from glance.core.registry.discover import USER_COMPONENTS_ROOT
+    from glancely.dashboard.build import build
+    from glancely.core.registry.discover import USER_COMPONENTS_ROOT
 
-    with patch("glance.dashboard.build.SKILLS_ROOT", comp_dir.parent), \
-         patch("glance.core.registry.discover.USER_COMPONENTS_ROOT", comp_dir.parent):
+    with patch("glancely.dashboard.build.SKILLS_ROOT", comp_dir.parent), \
+         patch("glancely.core.registry.discover.USER_COMPONENTS_ROOT", comp_dir.parent):
         result = build(output_path=output, run_migrations=True)
 
     assert output.exists()
@@ -2339,23 +2339,23 @@ git commit -m "test: add end-to-end smoke test for dashboard chart system"
 
 - [ ] **Step 1: Run ruff linter**
 
-Run: `python -m ruff check glance/ tests/`
+Run: `python -m ruff check glancely/ tests/`
 Expected: No new errors. Fix any that appear.
 
 - [ ] **Step 2: Run ruff format check**
 
-Run: `python -m ruff format --check glance/dashboard/ tests/`
-If formatting issues exist: `python -m ruff format glance/dashboard/ tests/`
+Run: `python -m ruff format --check glancely/dashboard/ tests/`
+If formatting issues exist: `python -m ruff format glancely/dashboard/ tests/`
 
 - [ ] **Step 3: Run the existing test suite to verify no regressions**
 
-Run: `python -m pytest glance/core/registry/tests/ glance/core/storage/tests/ glance/skills/scaffold_component/tests/ -v`
+Run: `python -m pytest glancely/core/registry/tests/ glancely/core/storage/tests/ glancely/skills/scaffold_component/tests/ -v`
 Expected: All existing tests PASS
 
 - [ ] **Step 4: Run a dashboard build to verify output**
 
 ```bash
-python3 -m glance dashboard build --no-migrate --out /tmp/test_dashboard.html
+python3 -m glancely dashboard build --no-migrate --out /tmp/test_dashboard.html
 # Open in browser to visually verify (manual step)
 ```
 
@@ -2477,9 +2477,9 @@ git commit -m "docs: document chart.toml schema and chart data contract"
 ## Verification Checklist
 
 After implementation, verify:
-- [ ] `python -m ruff check glance/ tests/` passes with no new errors
+- [ ] `python -m ruff check glancely/ tests/` passes with no new errors
 - [ ] `python -m pytest tests/ -v` — all tests pass including new chart tests
-- [ ] `python -m glance dashboard build --out /tmp/test.html` produces valid HTML
+- [ ] `python -m glancely dashboard build --out /tmp/test.html` produces valid HTML
 - [ ] Manually open `/tmp/test.html` in a browser — all chart types render correctly
 - [ ] Dark mode toggle — CSS custom properties switch correctly
 - [ ] Remove `chart.toml` from an example component, rebuild — falls back to basic card

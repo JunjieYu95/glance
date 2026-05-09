@@ -13,11 +13,11 @@ Initial public release.
 
 ### Added
 
-- **Single CLI** (`glance`) with subcommands for every component:
+- **Single CLI** (`glancely`) with subcommands for every component:
   `setup`, `doctor`, `diary`, `mood`, `reminder`, `mit`, `scaffold`,
   `dashboard`, `list`.
-- **Component framework** (`glance/core/`): per-component SQL
-  migrations into a shared `~/.glance/data.db`, filesystem-driven
+- **Component framework** (`glancely/core/`): per-component SQL
+  migrations into a shared `~/.glancely/data.db`, filesystem-driven
   registry (no central registry file), Google OAuth (user brings own
   client), openclaw cron registration helpers.
 - **Shipped components**:
@@ -28,7 +28,7 @@ Initial public release.
   - `mit` — nightly Most Important Task check-in.
   - `scaffold_component` — meta-skill that creates a new tracker
     end-to-end (folder + skill + migrations + cron + dashboard panel).
-- **Read-only dashboard** (`glance dashboard build`) — static HTML
+- **Read-only dashboard** (`glancely dashboard build`) — static HTML
   rendered from each component's `stats.py`.
 - **Demo fixture** (`examples/demo-data/seed.py`) for reproducing the README
   screenshot without an OAuth client.
@@ -46,5 +46,5 @@ Initial public release.
 - Stats are computed on every dashboard build with no caching. Fine at ten
   components, will get slow beyond that.
 
-[Unreleased]: https://github.com/JunjieYu95/glance/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/JunjieYu95/glance/releases/tag/v0.1.0
+[Unreleased]: https://github.com/JunjieYu95/glancely/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/JunjieYu95/glancely/releases/tag/v0.1.0

@@ -12,7 +12,7 @@ labels: enhancement
 ## Proposal
 
 <!--
-If it's a new tracker, the easiest path is `glance scaffold` — does this
+If it's a new tracker, the easiest path is `glancely scaffold` — does this
 need to be in core, or could it live as a user-side component? If it
 needs to be in core, why?
 -->

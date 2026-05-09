@@ -5,7 +5,7 @@
 Use the scaffolder rather than hand-writing files:
 
 ```bash
-python3 glance/skills/scaffold_component/scripts/scaffold.py \
+python3 glancely/skills/scaffold_component/scripts/scaffold.py \
   --name <snake_case> --title "<Title>" \
   --field <name>:<type> [--field ...] \
   [--cron "<cron expr>" --notify "<text>"]
@@ -21,7 +21,7 @@ The new folder will already have a passing `tests/test_smoke.py`. Customize
 Each component owns its tests under `skills/<name>/tests/`. Run all tests:
 
 ```bash
-python3 -m pytest glance/
+python3 -m pytest glancely/
 ```
 
 ## Component contract

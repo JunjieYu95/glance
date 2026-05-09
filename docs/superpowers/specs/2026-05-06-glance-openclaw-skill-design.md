@@ -1,4 +1,4 @@
-# glance v0.2.0 — OpenClaw Skill Redesign
+# glancely v0.2.0 — OpenClaw Skill Redesign
 
 **Date:** 2026-05-06
 **Status:** Draft
@@ -6,21 +6,21 @@
 
 ## Overview
 
-Redesign glance as a professional, installable OpenClaw skill bundle via ClawHub.
+Redesign glancely as a professional, installable OpenClaw skill bundle via ClawHub.
 Framework + example blueprints + scaffold generator that builds personalized
 trackers from natural language intent. No hardcoded trackers. No mandatory
-auth dependencies. Everything lives under `~/.glance/` for user data durability.
+auth dependencies. Everything lives under `~/.glancely/` for user data durability.
 
 ---
 
 ## 1. Architecture
 
 ```
-glance/                          ← ClawHub skill root (immutable)
+glancely/                          ← ClawHub skill root (immutable)
 ├── SKILL.md                     ← master handbook + dispatch table
 ├── install.sh
 ├── pyproject.toml
-├── glance/                      ← core framework (the skeleton)
+├── glancely/                      ← core framework (the skeleton)
 │   ├── cli.py                   ← single CLI entry point
 │   ├── core/
 │   │   ├── auth/                ← per-component auth dispatcher
@@ -44,7 +44,7 @@ glance/                          ← ClawHub skill root (immutable)
         ├── SKILL.md
         └── component.toml
 
-~/.glance/                       ← user data (survives skill updates)
+~/.glancely/                       ← user data (survives skill updates)
 ├── data.db                      ← shared SQLite
 ├── openclaw.toml                ← cron config (agent_id, session, etc.)
 ├── dashboard/
@@ -65,8 +65,8 @@ glance/                          ← ClawHub skill root (immutable)
 ### Key principles
 
 - **Framework vs. content**: core handles infrastructure (CLI, cron, dashboard, migrations). Examples are reference blueprints, never auto-installed.
-- **User data in ~/.glance/**: user-scaffolded trackers, auth tokens, and the database live outside the skill directory. Survives `clawhub update`.
-- **No central registry**: discovery walks `~/.glance/components/` and `examples/`. Adding a tracker means dropping a folder.
+- **User data in ~/.glancely/**: user-scaffolded trackers, auth tokens, and the database live outside the skill directory. Survives `clawhub update`.
+- **No central registry**: discovery walks `~/.glancely/components/` and `examples/`. Adding a tracker means dropping a folder.
 - **Auth per tracker**: no global Google dependency. Each `component.toml` declares its own auth requirements.
 
 ---
@@ -80,7 +80,7 @@ Its job: analyze user intent, route to the correct sub-skill, and call the right
 
 ```yaml
 ---
-name: glance
+name: glancely
 description: >
   Personal tracker framework. Dashboard, cron, reminders, mood, diary, MIT.
   Scaffold new trackers in one command from natural language.
@@ -92,11 +92,11 @@ metadata:
     os: [macos, linux]
     install:
       - kind: pip
-        package: glance
+        package: glancely
     envVars:
       - name: GLANCE_HOME
         required: false
-        description: Custom data directory (default ~/.glance)
+        description: Custom data directory (default ~/.glancely)
 ---
 ```
 
@@ -104,16 +104,16 @@ metadata:
 
 | User says             | Action                                                            |
 |-----------------------|-------------------------------------------------------------------|
-| "log mood"            | Check `~/.glance/components/mood/`. If exists → run log.py. If not → read `examples/mood/` for ref → scaffold first |
-| "remind me" / "add"   | Check `~/.glance/components/reminder/`. Same fallback pattern     |
-| "what's my MIT"       | Check `~/.glance/components/mit/`. Same fallback pattern          |
-| "log diary" / "time"  | Check `~/.glance/components/diary/`. Same fallback pattern        |
-| "build dashboard"     | Run `glance dashboard build`                                      |
-| "create tracker for X"| Read `glance/skills/scaffold_component/SKILL.md` → infer → propose → scaffold |
+| "log mood"            | Check `~/.glancely/components/mood/`. If exists → run log.py. If not → read `examples/mood/` for ref → scaffold first |
+| "remind me" / "add"   | Check `~/.glancely/components/reminder/`. Same fallback pattern     |
+| "what's my MIT"       | Check `~/.glancely/components/mit/`. Same fallback pattern          |
+| "log diary" / "time"  | Check `~/.glancely/components/diary/`. Same fallback pattern        |
+| "build dashboard"     | Run `glancely dashboard build`                                      |
+| "create tracker for X"| Read `glancely/skills/scaffold_component/SKILL.md` → infer → propose → scaffold |
 | "track my habit"      | Same scaffold flow: infer fields, cron, notify → propose → confirm|
 
 **Per-route workflow:**
-1. Check if the user already has a matching component in `~/.glance/components/`
+1. Check if the user already has a matching component in `~/.glancely/components/`
 2. If yes: read its SKILL.md, call its scripts/log.py with user arguments
 3. If no: read the matching example in `examples/` as a reference blueprint, then run the scaffold flow (intent → propose → confirm → scaffold)
 4. Report the result
@@ -124,12 +124,12 @@ Each example has its own SKILL.md, publishable independently on ClawHub:
 
 ```yaml
 ---
-name: glance-mood
+name: glancely-mood
 description: Hourly mood check-ins via chat
 ---
 ## Usage
-glance mood log --raw "feeling great" --score 8
-glance mood stats
+glancely mood log --raw "feeling great" --score 8
+glancely mood stats
 
 ## Scripts
 scripts/log.py --raw "..." [--score 1-10]
@@ -142,7 +142,7 @@ Teaches the agent how to infer tracker structure from user intent:
 
 ```yaml
 ---
-name: glance-scaffold
+name: glancely-scaffold
 description: >
   Create new personal trackers from natural language. Infers field names,
   types, cron schedules, and notification text. Proposes a plan before
@@ -160,7 +160,7 @@ description: >
    Ask for confirmation.
 
 3. **Scaffold** each confirmed tracker:
-   glance scaffold --name <name> --field <name:type> ... --cron <expr> --notify <text>
+   glancely scaffold --name <name> --field <name:type> ... --cron <expr> --notify <text>
 
 4. **Dashboard** auto-builds after each scaffold.
 ```
@@ -171,29 +171,29 @@ description: >
 
 Setup is conversation-driven, not a questionnaire:
 
-1. User installs: `clawhub install glance` → framework + example blueprints land on disk
+1. User installs: `clawhub install glancely` → framework + example blueprints land on disk
 2. User describes intent: *"I want to track my workouts and build a reading habit"*
 3. Agent reads scaffold SKILL.md → infers structure → proposes a plan:
    > "I'll create 2 trackers: workout (type, duration, notes, 9pm daily) and reading (book, pages, 10pm daily). Dashboard shows both. Sound good?"
 4. User confirms or revises
-5. Agent runs `glance scaffold` for each → migrations, cron, dashboard auto-built
+5. Agent runs `glancely scaffold` for each → migrations, cron, dashboard auto-built
 6. Auth prompted only if a tracker needs it (e.g., diary_logger → Google OAuth)
 
 ### CLI commands
 
 ```
-glance setup [--skip-cron] [--skip-auth]    ← minimal framework init (migrations only)
-glance doctor                                ← health check
-glance list                                  ← discovered user components
-glance scaffold --name X --field ... --cron ... --notify ...
-glance dashboard build [--out PATH]
-glance dashboard open
-glance version
+glancely setup [--skip-cron] [--skip-auth]    ← minimal framework init (migrations only)
+glancely doctor                                ← health check
+glancely list                                  ← discovered user components
+glancely scaffold --name X --field ... --cron ... --notify ...
+glancely dashboard build [--out PATH]
+glancely dashboard open
+glancely version
 ```
 
 ### Cron configuration
 
-Cron config lives in `~/.glance/openclaw.toml`:
+Cron config lives in `~/.glancely/openclaw.toml`:
 ```toml
 agent_id = "ceo_secretary"
 session_target = "main"
@@ -209,7 +209,7 @@ Prompted once, on first scaffold that includes `--cron`. If skipped, cron is def
 ### 4.1 Folder shape
 
 ```
-~/.glance/components/<name>/
+~/.glancely/components/<name>/
 ├── component.toml         ← required
 ├── SKILL.md               ← optional, reusable on ClawHub
 ├── migrations/
@@ -273,13 +273,13 @@ kind = "none"               ← "none" | "google" | "env"
 
 - Live in `migrations/` directory, applied in lexicographic order
 - Tracked in shared `_migrations(component, name, applied_at)` table
-- Run automatically on: `glance setup`, `glance scaffold`, `glance dashboard build`
+- Run automatically on: `glancely setup`, `glancely scaffold`, `glancely dashboard build`
 
 ---
 
 ## 5. Dashboard
 
-Static HTML, light/dark mode, responsive grid. Builds from `~/.glance/components/*/scripts/stats.py` (user trackers only). Dashboard is read-only. No interactive UI. Logging happens through chat.
+Static HTML, light/dark mode, responsive grid. Builds from `~/.glancely/components/*/scripts/stats.py` (user trackers only). Dashboard is read-only. No interactive UI. Logging happens through chat.
 
 ---
 
@@ -294,7 +294,7 @@ Static HTML, light/dark mode, responsive grid. Builds from `~/.glance/components
 | Example blueprints | Each example's scripts work in isolation | pytest per example |
 | CLI smoke | version, --help, subcommand --help | CI smoke step |
 
-Target: ~25 tests total (up from 13 current). All runnable via `pytest glance/ -v`.
+Target: ~25 tests total (up from 13 current). All runnable via `pytest glancely/ -v`.
 CI: Python 3.9, 3.10, 3.11, 3.12 on GitHub Actions.
 
 ---
@@ -304,20 +304,20 @@ CI: Python 3.9, 3.10, 3.11, 3.12 on GitHub Actions.
 ### New files
 - `SKILL.md` (master, at repo root)
 - `examples/*/SKILL.md` (mood, reminder, mit, diary_logger)
-- `glance/skills/scaffold_component/SKILL.md`
-- `glance/core/auth/__init__.py` (auth dispatcher)
+- `glancely/skills/scaffold_component/SKILL.md`
+- `glancely/core/auth/__init__.py` (auth dispatcher)
 - `tests/` additions
 
 ### Modified files
 - `pyproject.toml` — update version, package-data for examples/
-- `glance/cli.py` — add `glance setup` as minimal init
-- `glance/core/openclaw_cron.py` → rename to `cron.py`, simplify
-- `glance/core/registry/discover.py` — search both `~/.glance/components/` and `examples/`
-- `glance/core/storage/db.py` — `GLANCE_HOME` as data root
-- `glance/dashboard/build.py` — build from both sources
-- `install.sh` — simplify to pip install + glance setup
+- `glancely/cli.py` — add `glancely setup` as minimal init
+- `glancely/core/openclaw_cron.py` → rename to `cron.py`, simplify
+- `glancely/core/registry/discover.py` — search both `~/.glancely/components/` and `examples/`
+- `glancely/core/storage/db.py` — `GLANCE_HOME` as data root
+- `glancely/dashboard/build.py` — build from both sources
+- `install.sh` — simplify to pip install + glancely setup
 - `README.md` — update for ClawHub install flow
 
 ### Removed
-- Hardcoded Google OAuth from `glance setup` (moved to per-tracker auth)
-- `glance/core/auth/google_oauth.py` → moved to example diary_logger as an optional dep
+- Hardcoded Google OAuth from `glancely setup` (moved to per-tracker auth)
+- `glancely/core/auth/google_oauth.py` → moved to example diary_logger as an optional dep

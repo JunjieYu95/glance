@@ -3,7 +3,7 @@ __pycache__/
 *.egg-info/
 .venv/
 .env
-glance/dashboard/index.html
+glancely/dashboard/index.html
 examples/demo-data/data.db
 examples/demo-data/data.db-shm
 examples/demo-data/data.db-wal

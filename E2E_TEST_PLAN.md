@@ -13,7 +13,7 @@
 ## Prerequisites
 
 ```bash
-pip install -e ".[dev]"  # installs glance + pytest + ruff
+pip install -e ".[dev]"  # installs glancely + pytest + ruff
 ```
 
 All test commands run from the project root. Every test function must set `monkeypatch.setenv("GLANCE_HOME", str(tmp_path))` to isolate data.
@@ -22,7 +22,7 @@ All test commands run from the project root. Every test function must set `monke
 
 ## Part 1: Installation & Bootstrap
 
-### Test 1.1: Fresh install — `pip install glance` succeeds
+### Test 1.1: Fresh install — `pip install glancely` succeeds
 
 - [ ] **Step 1: Write the test**
 
@@ -36,12 +36,12 @@ from pathlib import Path
 
 
 def test_pip_install_from_local():
-    """pip install . in a temp venv succeeds and installs the glance CLI."""
+    """pip install . in a temp venv succeeds and installs the glancely CLI."""
     with tempfile.TemporaryDirectory() as td:
         venv_dir = Path(td) / "venv"
         subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True)
         pip = str(venv_dir / "bin" / "pip")
-        glance_bin = str(venv_dir / "bin" / "glance")
+        glancely_bin = str(venv_dir / "bin" / "glancely")
 
         result = subprocess.run(
             [pip, "install", str(Path(__file__).resolve().parent.parent.parent)],
@@ -49,10 +49,10 @@ def test_pip_install_from_local():
         )
         assert result.returncode == 0, f"pip install failed:\n{result.stderr}"
 
-        assert Path(glance_bin).exists(), "glance CLI not installed"
+        assert Path(glancely_bin).exists(), "glancely CLI not installed"
 
         version = subprocess.run(
-            [glance_bin, "version"], capture_output=True, text=True
+            [glancely_bin, "version"], capture_output=True, text=True
         )
         assert version.returncode == 0
         assert version.stdout.strip() != ""
@@ -74,7 +74,7 @@ Expected: PASS (green).
 
 ---
 
-### Test 1.2: `glance version` returns correct version
+### Test 1.2: `glancely version` returns correct version
 
 - [ ] **Step 1: Write the test**
 
@@ -82,13 +82,13 @@ Expected: PASS (green).
 import subprocess
 import sys
 import json
-from glance import __version__
+from glancely import __version__
 
 
-def test_glance_version_cli():
-    """glance version outputs the same version as the package."""
+def test_glancely_version_cli():
+    """glancely version outputs the same version as the package."""
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "version"],
+        [sys.executable, "-m", "glancely", "version"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
@@ -98,13 +98,13 @@ def test_glance_version_cli():
 - [ ] **Step 2: Run test**
 
 ```bash
-pytest tests/e2e/test_install.py::test_glance_version_cli -v
+pytest tests/e2e/test_install.py::test_glancely_version_cli -v
 ```
 Expected: PASS.
 
 ---
 
-### Test 1.3: `glance setup` creates GLANCE_HOME and runs migrations
+### Test 1.3: `glancely setup` creates GLANCE_HOME and runs migrations
 
 - [ ] **Step 1: Write the test**
 
@@ -115,18 +115,18 @@ import sys
 from pathlib import Path
 
 
-def test_glance_setup_creates_home(tmp_path, monkeypatch):
-    """glance setup creates GLANCE_HOME, data.db, and applies all example migrations."""
+def test_glancely_setup_creates_home(tmp_path, monkeypatch):
+    """glancely setup creates GLANCE_HOME, data.db, and applies all example migrations."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
 
     output = json.loads(result.stdout)
-    assert output["glance_home"] == str(tmp_path)
+    assert output["glancely_home"] == str(tmp_path)
     assert output["migrations_applied"] > 0
 
     db_path = tmp_path / "data.db"
@@ -145,13 +145,13 @@ def test_glance_setup_creates_home(tmp_path, monkeypatch):
 - [ ] **Step 2: Run test**
 
 ```bash
-pytest tests/e2e/test_install.py::test_glance_setup_creates_home -v
+pytest tests/e2e/test_install.py::test_glancely_setup_creates_home -v
 ```
 Expected: PASS.
 
 ---
 
-### Test 1.4: `glance setup` is idempotent
+### Test 1.4: `glancely setup` is idempotent
 
 - [ ] **Step 1: Write the test**
 
@@ -161,19 +161,19 @@ import subprocess
 import sys
 
 
-def test_glance_setup_idempotent(tmp_path, monkeypatch):
+def test_glancely_setup_idempotent(tmp_path, monkeypatch):
     """Running setup twice produces the same result (no duplicate migrations)."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
 
     r1 = subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
     assert r1.returncode == 0
     applied1 = json.loads(r1.stdout)["migrations_applied"]
 
     r2 = subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
     assert r2.returncode == 0
@@ -185,13 +185,13 @@ def test_glance_setup_idempotent(tmp_path, monkeypatch):
 - [ ] **Step 2: Run test**
 
 ```bash
-pytest tests/e2e/test_install.py::test_glance_setup_idempotent -v
+pytest tests/e2e/test_install.py::test_glancely_setup_idempotent -v
 ```
 Expected: PASS.
 
 ---
 
-### Test 1.5: `glance doctor` produces valid health report on fresh home
+### Test 1.5: `glancely doctor` produces valid health report on fresh home
 
 - [ ] **Step 1: Write the test**
 
@@ -201,17 +201,17 @@ import subprocess
 import sys
 
 
-def test_glance_doctor_fresh(tmp_path, monkeypatch):
+def test_glancely_doctor_fresh(tmp_path, monkeypatch):
     """doctor reports health status on a freshly set-up home."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "doctor"],
+        [sys.executable, "-m", "glancely", "doctor"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
@@ -227,13 +227,13 @@ def test_glance_doctor_fresh(tmp_path, monkeypatch):
 - [ ] **Step 2: Run test**
 
 ```bash
-pytest tests/e2e/test_install.py::test_glance_doctor_fresh -v
+pytest tests/e2e/test_install.py::test_glancely_doctor_fresh -v
 ```
 Expected: PASS.
 
 ---
 
-### Test 1.6: `glance list` on a fresh install shows example components
+### Test 1.6: `glancely list` on a fresh install shows example components
 
 - [ ] **Step 1: Write the test**
 
@@ -243,16 +243,16 @@ import subprocess
 import sys
 
 
-def test_glance_list_on_fresh(tmp_path, monkeypatch):
-    """glance list discovers all example components after setup."""
+def test_glancely_list_on_fresh(tmp_path, monkeypatch):
+    """glancely list discovers all example components after setup."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "list"],
+        [sys.executable, "-m", "glancely", "list"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
@@ -267,7 +267,7 @@ def test_glance_list_on_fresh(tmp_path, monkeypatch):
 - [ ] **Step 2: Run test**
 
 ```bash
-pytest tests/e2e/test_install.py::test_glance_list_on_fresh -v
+pytest tests/e2e/test_install.py::test_glancely_list_on_fresh -v
 ```
 Expected: PASS.
 
@@ -292,12 +292,12 @@ def test_mood_log_and_verify(tmp_path, monkeypatch):
     """mood log --raw stores an entry; mood stats returns it."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     log_result = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", "Feeling great today!", "--score", "8", "--label", "happy"],
         capture_output=True, text=True
     )
@@ -312,7 +312,7 @@ def test_mood_log_and_verify(tmp_path, monkeypatch):
     assert rows[0]["raw_text"] == "Feeling great today!"
 
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True
     )
     assert stats.returncode == 0
@@ -342,20 +342,20 @@ def test_mood_multiple_entries(tmp_path, monkeypatch):
     """Multiple entries produce correct stats with 7-day average."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     for score in [9, 7, 8, 6, 10]:
         r = subprocess.run(
-            [sys.executable, "-m", "glance", "mood", "log",
+            [sys.executable, "-m", "glancely", "mood", "log",
              "--raw", f"Score {score}", "--score", str(score)],
             capture_output=True, text=True
         )
         assert r.returncode == 0
 
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True
     )
     payload = json.loads(stats.stdout)
@@ -382,12 +382,12 @@ def test_mood_stats_empty(tmp_path, monkeypatch):
     """mood stats on empty database returns zero counts, no crash."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True
     )
     assert stats.returncode == 0
@@ -415,12 +415,12 @@ def test_mood_log_invalid_score(tmp_path, monkeypatch):
     """mood log with --score 999 should either reject or clamp gracefully."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", "Bad score", "--score", "999"],
         capture_output=True, text=True
     )
@@ -467,20 +467,20 @@ def test_mit_set_and_today(tmp_path, monkeypatch):
     """mit set stores a task; mit today returns it; mit stats reflects it."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
     today = date.today().isoformat()
 
     set_result = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", "Write E2E test plan", "--completed", "false"],
         capture_output=True, text=True
     )
     assert set_result.returncode == 0
 
     today_result = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "today"],
+        [sys.executable, "-m", "glancely", "mit", "today"],
         capture_output=True, text=True
     )
     assert today_result.returncode == 0
@@ -490,7 +490,7 @@ def test_mit_set_and_today(tmp_path, monkeypatch):
     assert task["date"] == today
 
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "stats"],
+        [sys.executable, "-m", "glancely", "mit", "stats"],
         capture_output=True, text=True
     )
     payload = json.loads(stats.stdout)
@@ -515,24 +515,24 @@ def test_mit_mark_completed(tmp_path, monkeypatch):
     """mit set --completed true updates the existing row."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
     today = date.today().isoformat()
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", "Finish feature", "--completed", "false"],
         capture_output=True, text=True
     )
     subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", "Finish feature", "--completed", "true"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "today"],
+        [sys.executable, "-m", "glancely", "mit", "today"],
         capture_output=True, text=True
     )
     task = json.loads(result.stdout)
@@ -557,12 +557,12 @@ def test_mit_today_empty(tmp_path, monkeypatch):
     """mit today on empty database handles gracefully."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "today"],
+        [sys.executable, "-m", "glancely", "mit", "today"],
         capture_output=True, text=True
     )
     # Should not crash; should return something sensible (empty dict or null)
@@ -590,7 +590,7 @@ def test_mit_stats_7day(tmp_path, monkeypatch):
     """mit stats shows correct completed_last_7d count."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -601,13 +601,13 @@ def test_mit_stats_7day(tmp_path, monkeypatch):
     for i in range(3):
         d = (today - timedelta(days=i)).isoformat()
         subprocess.run(
-            [sys.executable, "-m", "glance", "mit", "set",
+            [sys.executable, "-m", "glancely", "mit", "set",
              "--date", d, "--task", f"Task {i}", "--completed", "true"],
             capture_output=True, text=True
         )
 
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "stats"],
+        [sys.executable, "-m", "glancely", "mit", "stats"],
         capture_output=True, text=True
     )
     payload = json.loads(stats.stdout)
@@ -641,13 +641,13 @@ def test_reminder_add_list_done_cancel(tmp_path, monkeypatch):
     """Full lifecycle: add -> list active -> mark done -> verify -> add another -> cancel -> verify."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     # Add
     add = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Buy groceries", "--due", "2026-12-25"],
         capture_output=True, text=True
     )
@@ -655,7 +655,7 @@ def test_reminder_add_list_done_cancel(tmp_path, monkeypatch):
 
     # List active
     list_result = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "list"],
+        [sys.executable, "-m", "glancely", "reminder", "list"],
         capture_output=True, text=True
     )
     assert list_result.returncode == 0
@@ -666,7 +666,7 @@ def test_reminder_add_list_done_cancel(tmp_path, monkeypatch):
 
     # Mark done
     done = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "done",
+        [sys.executable, "-m", "glancely", "reminder", "done",
          "--id", str(reminder_id)],
         capture_output=True, text=True
     )
@@ -674,32 +674,32 @@ def test_reminder_add_list_done_cancel(tmp_path, monkeypatch):
 
     # List again — should be empty (done items not in active list)
     list2 = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "list"],
+        [sys.executable, "-m", "glancely", "reminder", "list"],
         capture_output=True, text=True
     )
     assert json.loads(list2.stdout) == []
 
     # Add another, then cancel
     add2 = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Cancel me"],
         capture_output=True, text=True
     )
     list3 = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "list"],
+        [sys.executable, "-m", "glancely", "reminder", "list"],
         capture_output=True, text=True
     )
     new_id = json.loads(list3.stdout)[0]["id"]
 
     cancel = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "cancel",
+        [sys.executable, "-m", "glancely", "reminder", "cancel",
          "--id", str(new_id)],
         capture_output=True, text=True
     )
     assert cancel.returncode == 0
 
     list4 = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "list"],
+        [sys.executable, "-m", "glancely", "reminder", "list"],
         capture_output=True, text=True
     )
     assert json.loads(list4.stdout) == []
@@ -723,23 +723,23 @@ def test_reminder_digest(tmp_path, monkeypatch):
     """reminder digest prints active reminders in markdown format."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Renew passport", "--due", "2026-06-01"],
         capture_output=True, text=True
     )
     subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Call dentist"],
         capture_output=True, text=True
     )
 
     digest = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "digest"],
+        [sys.executable, "-m", "glancely", "reminder", "digest"],
         capture_output=True, text=True
     )
     assert digest.returncode == 0
@@ -767,7 +767,7 @@ def test_reminder_stats(tmp_path, monkeypatch):
     """reminder stats returns correct active/overdue/completed counts."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -776,31 +776,31 @@ def test_reminder_stats(tmp_path, monkeypatch):
     yesterday = (date.today() - timedelta(days=1)).isoformat()
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Overdue task", "--due", yesterday],
         capture_output=True, text=True
     )
     add = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Active task"],
         capture_output=True, text=True
     )
     list_r = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "list"],
+        [sys.executable, "-m", "glancely", "reminder", "list"],
         capture_output=True, text=True
     )
     # Mark first matching "Active task" as done
     for r in json.loads(list_r.stdout):
         if r["title"] == "Active task":
             subprocess.run(
-                [sys.executable, "-m", "glance", "reminder", "done",
+                [sys.executable, "-m", "glancely", "reminder", "done",
                  "--id", str(r["id"])],
                 capture_output=True, text=True
             )
             break
 
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "stats"],
+        [sys.executable, "-m", "glancely", "reminder", "stats"],
         capture_output=True, text=True
     )
     payload = json.loads(stats.stdout)
@@ -827,12 +827,12 @@ def test_reminder_invalid_id(tmp_path, monkeypatch):
     """Marking a non-existent reminder should not crash."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "done",
+        [sys.executable, "-m", "glancely", "reminder", "done",
          "--id", "99999"],
         capture_output=True, text=True
     )
@@ -871,12 +871,12 @@ def test_diary_log_without_credentials(tmp_path, monkeypatch):
     """diary log exits cleanly when no Google OAuth credentials exist."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "diary", "log",
+        [sys.executable, "-m", "glancely", "diary", "log",
          "--title", "Meeting", "--category", "prod"],
         capture_output=True, text=True
     )
@@ -957,12 +957,12 @@ def test_diary_stats_without_credentials(tmp_path, monkeypatch):
     """diary stats should not crash when Google is unreachable."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "diary", "stats"],
+        [sys.executable, "-m", "glancely", "diary", "stats"],
         capture_output=True, text=True
     )
     # Accept either clean failure or graceful empty response
@@ -995,15 +995,15 @@ from pathlib import Path
 
 
 def test_dashboard_build_fresh(tmp_path, monkeypatch):
-    """glance dashboard build produces a valid HTML file."""
+    """glancely dashboard build produces a valid HTML file."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "dashboard", "build"],
+        [sys.executable, "-m", "glancely", "dashboard", "build"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
@@ -1015,7 +1015,7 @@ def test_dashboard_build_fresh(tmp_path, monkeypatch):
     html = html_path.read_text()
     assert "<!DOCTYPE html>" in html or "<html" in html
     assert "</html>" in html
-    assert "glance" in html.lower()
+    assert "glancely" in html.lower()
 
     # Verify panels are present
     assert "panels" in output
@@ -1041,30 +1041,30 @@ def test_dashboard_with_data(tmp_path, monkeypatch):
     """Dashboard shows real data after logging mood and MIT."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     # Seed data
     subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", "Happy", "--score", "9", "--label", "great"],
         capture_output=True, text=True
     )
     today = __import__("datetime").date.today().isoformat()
     subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", "Build dashboard", "--completed", "true"],
         capture_output=True, text=True
     )
     subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Test reminder"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "dashboard", "build"],
+        [sys.executable, "-m", "glancely", "dashboard", "build"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
@@ -1096,16 +1096,16 @@ Expected: PASS.
 
 ```python
 def test_dashboard_custom_output(tmp_path, monkeypatch):
-    """glance dashboard build --out <path> writes to the specified location."""
+    """glancely dashboard build --out <path> writes to the specified location."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     custom_path = tmp_path / "my-dashboard.html"
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "dashboard", "build",
+        [sys.executable, "-m", "glancely", "dashboard", "build",
          "--out", str(custom_path)],
         capture_output=True, text=True
     )
@@ -1132,7 +1132,7 @@ def test_dashboard_handles_failed_component(tmp_path, monkeypatch):
     """Dashboard marks a component as error if its stats.py crashes, but continues for others."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1152,7 +1152,7 @@ title = "Broken Component"
     (broken_scripts / "log.py").write_text("print('ok')")
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "dashboard", "build"],
+        [sys.executable, "-m", "glancely", "dashboard", "build"],
         capture_output=True, text=True
     )
     assert result.returncode == 0  # Dashboard should still succeed overall
@@ -1190,15 +1190,15 @@ from pathlib import Path
 
 
 def test_scaffold_simple_tracker(tmp_path, monkeypatch):
-    """glance scaffold creates a new component with migrations, log, stats, and tests."""
+    """glancely scaffold creates a new component with migrations, log, stats, and tests."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "weight_tracker",
          "--title", "Weight Tracker",
          "--field", "weight:float",
@@ -1227,9 +1227,9 @@ def test_scaffold_simple_tracker(tmp_path, monkeypatch):
     assert "weight_tracker_entries" in tables
     db.close()
 
-    # Verify it appears in glance list
+    # Verify it appears in glancely list
     list_result = subprocess.run(
-        [sys.executable, "-m", "glance", "list"],
+        [sys.executable, "-m", "glancely", "list"],
         capture_output=True, text=True
     )
     names = {c["name"] for c in json.loads(list_result.stdout)}
@@ -1254,12 +1254,12 @@ def test_scaffold_with_cron(tmp_path, monkeypatch):
     """Scaffold with --cron and --notify generates notify.py and cron config."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "water_reminder",
          "--title", "Water Reminder",
          "--field", "cups:int",
@@ -1299,19 +1299,19 @@ def test_scaffold_duplicate_name(tmp_path, monkeypatch):
     """Scaffolding the same name twice should fail or warn."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "unique_tracker",
          "--title", "Unique"],
         capture_output=True, text=True
     )
 
     result2 = subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "unique_tracker",
          "--title", "Duplicate Attempt"],
         capture_output=True, text=True
@@ -1340,12 +1340,12 @@ def test_scaffold_invalid_field_type(tmp_path, monkeypatch):
     """Scaffold rejects unknown field types."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "bad",
          "--title", "Bad",
          "--field", "x:invalid_type"],
@@ -1372,12 +1372,12 @@ def test_scaffolded_component_log_and_stats(tmp_path, monkeypatch):
     """A freshly scaffolded component's log.py and stats.py actually work."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "step_counter",
          "--title", "Step Counter",
          "--field", "steps:int",
@@ -1386,7 +1386,7 @@ def test_scaffolded_component_log_and_stats(tmp_path, monkeypatch):
     )
 
     # Call the generated log.py directly
-    from glance.core.storage.db import GLANCE_HOME
+    from glancely.core.storage.db import GLANCE_HOME
     # We need to call the component's log.py. Use its own path.
     import runpy
     sys_argv_backup = sys.argv
@@ -1453,12 +1453,12 @@ def test_two_independent_homes(tmp_path, monkeypatch):
 
     # Setup and seed home_a
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True,
         env={**__import__("os").environ, "GLANCE_HOME": str(home_a)}
     )
     subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", "Data in A", "--score", "5"],
         capture_output=True, text=True,
         env={**__import__("os").environ, "GLANCE_HOME": str(home_a)}
@@ -1466,14 +1466,14 @@ def test_two_independent_homes(tmp_path, monkeypatch):
 
     # Setup home_b (no data)
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True,
         env={**__import__("os").environ, "GLANCE_HOME": str(home_b)}
     )
 
     # home_b should be empty
     stats_b = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True,
         env={**__import__("os").environ, "GLANCE_HOME": str(home_b)}
     )
@@ -1482,7 +1482,7 @@ def test_two_independent_homes(tmp_path, monkeypatch):
 
     # home_a should still have its data
     stats_a = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True,
         env={**__import__("os").environ, "GLANCE_HOME": str(home_a)}
     )
@@ -1512,7 +1512,7 @@ def test_examples_are_immutable(tmp_path, monkeypatch):
     """Scaffolding a new component must not modify any file under examples/."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1529,7 +1529,7 @@ def test_examples_are_immutable(tmp_path, monkeypatch):
     before = hash_dir(examples_dir)
 
     subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "some_tracker",
          "--title", "Some Tracker",
          "--field", "count:int"],
@@ -1560,16 +1560,16 @@ Expected: PASS.
 
 ```python
 def test_user_component_shadows_example(tmp_path, monkeypatch):
-    """User-scaffolded 'mood' in ~/.glance/components/ takes precedence over examples/mood/."""
+    """User-scaffolded 'mood' in ~/.glancely/components/ takes precedence over examples/mood/."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     # Scaffold a user mood that should take precedence
     subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "mood",
          "--title", "Custom Mood",
          "--field", "vibe:text"],
@@ -1577,7 +1577,7 @@ def test_user_component_shadows_example(tmp_path, monkeypatch):
     )
 
     list_result = subprocess.run(
-        [sys.executable, "-m", "glance", "list"],
+        [sys.executable, "-m", "glancely", "list"],
         capture_output=True, text=True
     )
     components = json.loads(list_result.stdout)
@@ -1615,7 +1615,7 @@ def test_concurrent_writes_no_corruption(tmp_path, monkeypatch):
     """Multiple concurrent mood logs should not corrupt SQLite."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1623,7 +1623,7 @@ def test_concurrent_writes_no_corruption(tmp_path, monkeypatch):
 
     def log_mood(i):
         return subprocess.run(
-            [sys.executable, "-m", "glance", "mood", "log",
+            [sys.executable, "-m", "glancely", "mood", "log",
              "--raw", f"Concurrent {i}", "--score", str((i % 10) + 1)],
             capture_output=True, text=True, env=env
         )
@@ -1640,7 +1640,7 @@ def test_concurrent_writes_no_corruption(tmp_path, monkeypatch):
 
     # All 50 entries should be present
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True, env=env
     )
     payload = json.loads(stats.stdout)
@@ -1688,7 +1688,7 @@ def test_commands_on_uninitialized_home(tmp_path, monkeypatch):
 
     for cmd in commands:
         result = subprocess.run(
-            [sys.executable, "-m", "glance", *cmd],
+            [sys.executable, "-m", "glancely", *cmd],
             capture_output=True, text=True
         )
         output = result.stdout + result.stderr
@@ -1712,15 +1712,15 @@ Expected: PASS.
 
 ```python
 def test_missing_openclaw_toml(tmp_path, monkeypatch):
-    """glance doctor reports openclaw.toml as missing, not crashing."""
+    """glancely doctor reports openclaw.toml as missing, not crashing."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "doctor"],
+        [sys.executable, "-m", "glancely", "doctor"],
         capture_output=True, text=True
     )
     report = json.loads(result.stdout)
@@ -1753,7 +1753,7 @@ def test_corrupted_database(tmp_path, monkeypatch):
     # Any command should handle this without a traceback
     for cmd in [["list"], ["mood", "stats"], ["dashboard", "build"]]:
         result = subprocess.run(
-            [sys.executable, "-m", "glance", *cmd],
+            [sys.executable, "-m", "glancely", *cmd],
             capture_output=True, text=True
         )
         output = result.stdout + result.stderr
@@ -1780,7 +1780,7 @@ def test_very_long_input(tmp_path, monkeypatch):
     """Commands accept extremely long string values without issues."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1788,7 +1788,7 @@ def test_very_long_input(tmp_path, monkeypatch):
 
     # Mood with long raw text
     result = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", long_text],
         capture_output=True, text=True
     )
@@ -1796,7 +1796,7 @@ def test_very_long_input(tmp_path, monkeypatch):
 
     # Reminder with long title
     result2 = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", long_text],
         capture_output=True, text=True
     )
@@ -1805,7 +1805,7 @@ def test_very_long_input(tmp_path, monkeypatch):
     # MIT with long task
     today = __import__("datetime").date.today().isoformat()
     result3 = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", long_text],
         capture_output=True, text=True
     )
@@ -1830,7 +1830,7 @@ def test_unicode_and_emoji(tmp_path, monkeypatch):
     """All text fields support Unicode, emoji, and mixed scripts."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1838,7 +1838,7 @@ def test_unicode_and_emoji(tmp_path, monkeypatch):
 
     # Mood
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", emoji_text, "--label", emoji_text, "--score", "7"],
         capture_output=True, text=True
     )
@@ -1846,7 +1846,7 @@ def test_unicode_and_emoji(tmp_path, monkeypatch):
 
     # Reminder
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", emoji_text],
         capture_output=True, text=True
     )
@@ -1855,7 +1855,7 @@ def test_unicode_and_emoji(tmp_path, monkeypatch):
     # MIT
     today = __import__("datetime").date.today().isoformat()
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", emoji_text],
         capture_output=True, text=True
     )
@@ -1863,7 +1863,7 @@ def test_unicode_and_emoji(tmp_path, monkeypatch):
 
     # Verify retrieval matches what was stored
     stats = subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "stats"],
+        [sys.executable, "-m", "glancely", "mood", "stats"],
         capture_output=True, text=True
     )
     payload = json.loads(stats.stdout)
@@ -1888,7 +1888,7 @@ def test_invalid_commands(tmp_path, monkeypatch):
     """Unknown commands and subcommands produce helpful error messages, not tracebacks."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1905,7 +1905,7 @@ def test_invalid_commands(tmp_path, monkeypatch):
 
     for cmd in invalid_commands:
         result = subprocess.run(
-            [sys.executable, "-m", "glance", *cmd],
+            [sys.executable, "-m", "glancely", *cmd],
             capture_output=True, text=True
         )
         output = result.stdout + result.stderr
@@ -1935,14 +1935,14 @@ Expected: PASS.
 import stat
 
 
-def test_readonly_glance_home(tmp_path, monkeypatch):
+def test_readonly_glancely_home(tmp_path, monkeypatch):
     """CLI handles read-only data directory gracefully (no crash)."""
     home = tmp_path / "readonly_home"
     home.mkdir()
 
     # Setup first
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True,
         env={**__import__("os").environ, "GLANCE_HOME": str(home)}
     )
@@ -1952,7 +1952,7 @@ def test_readonly_glance_home(tmp_path, monkeypatch):
 
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "glance", "mood", "log",
+            [sys.executable, "-m", "glancely", "mood", "log",
              "--raw", "should fail"],
             capture_output=True, text=True,
             env={**__import__("os").environ, "GLANCE_HOME": str(home)}
@@ -1968,7 +1968,7 @@ def test_readonly_glance_home(tmp_path, monkeypatch):
 - [ ] **Step 2: Run test**
 
 ```bash
-pytest tests/e2e/test_edge_cases.py::test_readonly_glance_home -v
+pytest tests/e2e/test_edge_cases.py::test_readonly_glancely_home -v
 ```
 Expected: PASS.
 
@@ -1983,7 +1983,7 @@ def test_empty_arguments(tmp_path, monkeypatch):
     """Empty strings and missing required args should fail with a message, not a traceback."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
     subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
 
@@ -1994,7 +1994,7 @@ def test_empty_arguments(tmp_path, monkeypatch):
 
     for cmd, _desc in empty_tests:
         result = subprocess.run(
-            [sys.executable, "-m", "glance", *cmd],
+            [sys.executable, "-m", "glancely", *cmd],
             capture_output=True, text=True
         )
         output = result.stdout + result.stderr
@@ -2035,14 +2035,14 @@ def test_full_workflow(tmp_path, monkeypatch):
 
     # 1. Setup
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "setup"],
+        [sys.executable, "-m", "glancely", "setup"],
         capture_output=True, text=True
     )
     assert r.returncode == 0
 
     # 2. Scaffold custom tracker
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "scaffold",
+        [sys.executable, "-m", "glancely", "scaffold",
          "--name", "book_log",
          "--title", "Reading Log",
          "--field", "pages_read:int",
@@ -2054,19 +2054,19 @@ def test_full_workflow(tmp_path, monkeypatch):
     # 3. Log data to every core component
     # Mood
     subprocess.run(
-        [sys.executable, "-m", "glance", "mood", "log",
+        [sys.executable, "-m", "glancely", "mood", "log",
          "--raw", "Integration test mood", "--score", "8"],
         capture_output=True, text=True
     )
     # MIT
     subprocess.run(
-        [sys.executable, "-m", "glance", "mit", "set",
+        [sys.executable, "-m", "glancely", "mit", "set",
          "--date", today, "--task", "Complete integration test", "--completed", "true"],
         capture_output=True, text=True
     )
     # Reminder
     subprocess.run(
-        [sys.executable, "-m", "glance", "reminder", "add",
+        [sys.executable, "-m", "glancely", "reminder", "add",
          "--title", "Integration test reminder"],
         capture_output=True, text=True
     )
@@ -2082,7 +2082,7 @@ def test_full_workflow(tmp_path, monkeypatch):
 
     # 4. Build dashboard
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "dashboard", "build"],
+        [sys.executable, "-m", "glancely", "dashboard", "build"],
         capture_output=True, text=True
     )
     assert r.returncode == 0
@@ -2122,11 +2122,11 @@ Expected: PASS.
 
 ```python
 def test_help_output_coverage(tmp_path, monkeypatch):
-    """glance help displays all registered commands."""
+    """glancely help displays all registered commands."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
 
     r = subprocess.run(
-        [sys.executable, "-m", "glance", "help"],
+        [sys.executable, "-m", "glancely", "help"],
         capture_output=True, text=True
     )
     assert r.returncode == 0
@@ -2173,7 +2173,7 @@ pytest tests/e2e/test_edge_cases.py -v    # Part 9
 pytest tests/e2e/test_integration.py -v   # Part 10
 
 # Run all tests including existing unit tests
-pytest glance/ examples/ tests/ -v
+pytest glancely/ examples/ tests/ -v
 ```
 
 ## Coverage Map
@@ -2201,5 +2201,5 @@ pytest glance/ examples/ tests/ -v
 - [x] **Sandbox isolation:** Independent GLANCE_HOME directories, immutable examples/, user component shadowing, and concurrent write safety are all covered.
 - [x] **Edge cases:** Empty database, missing config, corrupted DB, long input, Unicode/emoji, invalid commands, read-only filesystem, and empty arguments — all tested.
 - [x] **No placeholders:** Every test has complete, runnable code. No TBD, TODO, or "add error handling" notes.
-- [x] **Type consistency:** All test functions use consistent `tmp_path` and `monkeypatch` fixtures. All CLI invocations use the same pattern with `sys.executable -m glance`.
-- [x] **Command correctness:** All `glance` subcommands match the actual dispatch table in `glance/cli.py:219-229`.
+- [x] **Type consistency:** All test functions use consistent `tmp_path` and `monkeypatch` fixtures. All CLI invocations use the same pattern with `sys.executable -m glancely`.
+- [x] **Command correctness:** All `glancely` subcommands match the actual dispatch table in `glancely/cli.py:219-229`.

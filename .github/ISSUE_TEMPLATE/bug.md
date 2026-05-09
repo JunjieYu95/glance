@@ -19,14 +19,14 @@ labels: bug
 Exact commands. Example:
 
 ```bash
-glance setup
-glance diary log --title "test" --start 2pm --end 3pm
+glancely setup
+glancely diary log --title "test" --start 2pm --end 3pm
 ```
 -->
 
-## `glance doctor` output
+## `glancely doctor` output
 
-<!-- Run `glance doctor` and paste the JSON. Redact anything sensitive. -->
+<!-- Run `glancely doctor` and paste the JSON. Redact anything sensitive. -->
 
 ```json
 
@@ -34,8 +34,8 @@ glance diary log --title "test" --start 2pm --end 3pm
 
 ## Environment
 
-- glance version: <!-- run `glance version` -->
+- glancely version: <!-- run `glancely version` -->
 - Python version: <!-- run `python3 --version` -->
 - OS: <!-- macOS / Linux / Windows + version -->
-- openclaw cron config present (`~/.glance/openclaw.toml`): <!-- yes / no -->
-- Google OAuth credentials present (`~/.glance/credentials.json`): <!-- yes / no -->
+- openclaw cron config present (`~/.glancely/openclaw.toml`): <!-- yes / no -->
+- Google OAuth credentials present (`~/.glancely/credentials.json`): <!-- yes / no -->

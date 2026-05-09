@@ -7,7 +7,7 @@ def test_render_panel_with_chart_config(tmp_path):
     """Panel should render as chart when chart_config is present."""
     from unittest.mock import Mock
 
-    from glance.dashboard.build import _render_panel
+    from glancely.dashboard.build import _render_panel
 
     component = Mock()
     component.name = "test_comp"
@@ -36,7 +36,7 @@ def test_render_panel_without_chart_config(tmp_path):
     """Panel should render as basic card when no chart_config (backward compat)."""
     from unittest.mock import Mock
 
-    from glance.dashboard.build import _render_panel
+    from glancely.dashboard.build import _render_panel
 
     component = Mock()
     component.name = "test_comp"
@@ -108,9 +108,9 @@ def test_build_includes_overview_panel(tmp_path, monkeypatch):
         mock_comps.append(comp)
 
     with (
-        patch("glance.dashboard.build.discover_components", return_value=mock_comps),
-        patch("glance.dashboard.build.apply_all_migrations"),
-        patch("glance.dashboard.build._run_stats") as mock_stats,
+        patch("glancely.dashboard.build.discover_components", return_value=mock_comps),
+        patch("glancely.dashboard.build.apply_all_migrations"),
+        patch("glancely.dashboard.build._run_stats") as mock_stats,
     ):
         mock_stats.side_effect = [
             {
@@ -127,7 +127,7 @@ def test_build_includes_overview_panel(tmp_path, monkeypatch):
             },
         ]
 
-        from glance.dashboard.build import build
+        from glancely.dashboard.build import build
 
         build(output_path=output, run_migrations=False)
 

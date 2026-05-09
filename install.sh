@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# glance — one-shot installer for ClawHub skill.
+# glancely — one-shot installer for ClawHub skill.
 #
-#     pip install glance
-#     glance setup
+#     pip install glancely
+#     glancely setup
 #
 set -euo pipefail
 
@@ -14,18 +14,18 @@ if ! "$PYTHON_BIN" -c "import sys; sys.exit(0 if sys.version_info >= (3,9) else 
   echo "Need Python 3.9+; have $($PYTHON_BIN --version)"; exit 1
 fi
 
-step "Installing glance package"
+step "Installing glancely package"
 "$PYTHON_BIN" -m pip install --upgrade pip >/dev/null
 "$PYTHON_BIN" -m pip install -e "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 step "Running setup (migrations only)"
-glance setup
+glancely setup
 
 cat <<EOF
 
 Done. Try it:
-  glance list
-  glance version
+  glancely list
+  glancely version
 
 To create your first tracker:
   Just tell your agent what you want to track!

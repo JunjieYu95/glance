@@ -27,27 +27,27 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
       - name: Lint
-        run: ruff check glance/
+        run: ruff check glancely/
       - name: CLI smoke
         run: |
-          glance version
-          glance list
+          glancely version
+          glancely list
       - name: Validate SKILL.md files
         run: |
           test -f SKILL.md
-          test -f glance/examples/mood/SKILL.md
-          test -f glance/examples/reminder/SKILL.md
-          test -f glance/examples/mit/SKILL.md
-          test -f glance/examples/diary_logger/SKILL.md
-          test -f glance/skills/scaffold_component/SKILL.md
+          test -f glancely/examples/mood/SKILL.md
+          test -f glancely/examples/reminder/SKILL.md
+          test -f glancely/examples/mit/SKILL.md
+          test -f glancely/examples/diary_logger/SKILL.md
+          test -f glancely/skills/scaffold_component/SKILL.md
       - name: Tests
-        run: pytest tests/ glance/ -v
+        run: pytest tests/ glancely/ -v
       - name: Demo + dashboard build
         env:
           GLANCE_HOME: ${{ github.workspace }}/demo_tmp
         run: |
           mkdir -p "$GLANCE_HOME"
-          glance setup
-          glance scaffold --name test_tracker --field count:int 2>&1
-          glance dashboard build --out /tmp/index.html 2>&1
+          glancely setup
+          glancely scaffold --name test_tracker --field count:int 2>&1
+          glancely dashboard build --out /tmp/index.html 2>&1
           test -s /tmp/index.html

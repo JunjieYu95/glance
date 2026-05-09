@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "glance"
+name = "glancely"
 version = "0.2.0"
 description = "All-in-one personal tracker (diary, mood, reminders, MIT) as a single openclaw skill bundle. One dashboard, chat-driven, scaffolder for new components."
 readme = "README.md"
@@ -44,20 +44,20 @@ diary = [
 ]
 
 [project.scripts]
-glance = "glance.cli:main"
+glancely = "glancely.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/JunjieYu95/glance"
-Repository = "https://github.com/JunjieYu95/glance"
-Issues = "https://github.com/JunjieYu95/glance/issues"
-Changelog = "https://github.com/JunjieYu95/glance/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/JunjieYu95/glancely"
+Repository = "https://github.com/JunjieYu95/glancely"
+Issues = "https://github.com/JunjieYu95/glancely/issues"
+Changelog = "https://github.com/JunjieYu95/glancely/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
-include = ["glance*"]
-exclude = ["glance.*.tests*", "glance.*.tests.*"]
+include = ["glancely*"]
+exclude = ["glancely.*.tests*", "glancely.*.tests.*"]
 
 [tool.setuptools.package-data]
-glance = [
+glancely = [
     "py.typed",
     "skills/**/*.toml",
     "skills/**/*.md",
@@ -73,7 +73,7 @@ glance = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["glance", "examples"]
+testpaths = ["glancely", "examples"]
 python_files = ["test_*.py"]
 
 [tool.ruff]
@@ -88,9 +88,9 @@ ignore = ["E501"]
 # Component scripts intentionally bootstrap sys.path so they can run standalone
 # (the dashboard subprocesses each stats.py). The deferred imports trigger
 # E402; the bootstrap shuffles import order and trips I001.
-"glance/examples/*/scripts/*.py" = ["E402", "I001"]
-"glance/examples/*/tests/*.py" = ["E402", "I001"]
-"glance/core/*/tests/*.py" = ["E402", "I001"]
-"glance/dashboard/build.py" = ["E402", "I001"]
-"glance/examples/**/*.py" = ["E402", "I001"]
-"glance/skills/scaffold_component/templates/**" = ["F", "E", "W", "I", "B", "UP"]
+"glancely/examples/*/scripts/*.py" = ["E402", "I001"]
+"glancely/examples/*/tests/*.py" = ["E402", "I001"]
+"glancely/core/*/tests/*.py" = ["E402", "I001"]
+"glancely/dashboard/build.py" = ["E402", "I001"]
+"glancely/examples/**/*.py" = ["E402", "I001"]
+"glancely/skills/scaffold_component/templates/**" = ["F", "E", "W", "I", "B", "UP"]

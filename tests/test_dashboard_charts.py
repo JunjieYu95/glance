@@ -11,14 +11,14 @@ import pytest
 
 
 def test_render_overview_panel_empty():
-    from glance.dashboard.overview import render_overview_panel
+    from glancely.dashboard.overview import render_overview_panel
 
     html_out = render_overview_panel([])  # no components
     assert isinstance(html_out, str)
 
 
 def test_render_overview_panel_with_components():
-    from glance.dashboard.overview import render_overview_panel
+    from glancely.dashboard.overview import render_overview_panel
 
     components_meta = [
         {
@@ -58,7 +58,7 @@ def test_render_overview_panel_with_components():
 
 
 def test_resolve_data_key_nested():
-    from glance.dashboard.overview import resolve_data_key
+    from glancely.dashboard.overview import resolve_data_key
 
     payload = {"summary": {"by_category": {"prod": 240, "admin": 72}}}
     val = resolve_data_key(payload, "summary.by_category")
@@ -66,7 +66,7 @@ def test_resolve_data_key_nested():
 
 
 def test_resolve_data_key_top():
-    from glance.dashboard.overview import resolve_data_key
+    from glancely.dashboard.overview import resolve_data_key
 
     payload = {"status": "ok"}
     val = resolve_data_key(payload, "status")
@@ -79,7 +79,7 @@ def test_resolve_data_key_top():
 
 
 def test_render_chart_dispatches_to_correct_renderer():
-    from glance.dashboard.charts import render_chart
+    from glancely.dashboard.charts import render_chart
 
     # Test bar chart dispatch
     result = render_chart(
@@ -98,7 +98,7 @@ def test_render_chart_dispatches_to_correct_renderer():
 
 
 def test_render_chart_unknown_type_falls_back():
-    from glance.dashboard.charts import render_chart
+    from glancely.dashboard.charts import render_chart
 
     # Should not crash for unsupported type — return basic card HTML
     result = render_chart("unknown", {"summary": {"x": 1}, "rows": []}, {})
@@ -111,7 +111,7 @@ def test_render_chart_unknown_type_falls_back():
 
 
 def test_render_heatmap():
-    from glance.dashboard.charts import render_heatmap
+    from glancely.dashboard.charts import render_heatmap
 
     rows = [
         {"date": "2026-05-01", "score": 3},
@@ -124,14 +124,14 @@ def test_render_heatmap():
 
 
 def test_render_heatmap_empty():
-    from glance.dashboard.charts import render_heatmap
+    from glancely.dashboard.charts import render_heatmap
 
     html_out = render_heatmap([], date_field="date", value_field="val")
     assert "No data" in html_out
 
 
 def test_render_calendar_grid():
-    from glance.dashboard.charts import render_calendar_grid
+    from glancely.dashboard.charts import render_calendar_grid
 
     rows = [
         {"date": "2026-05-01", "count": 2},
@@ -143,7 +143,7 @@ def test_render_calendar_grid():
 
 
 def test_render_calendar_grid_empty():
-    from glance.dashboard.charts import render_calendar_grid
+    from glancely.dashboard.charts import render_calendar_grid
 
     html_out = render_calendar_grid([], date_field="date", value_field="val")
     assert "No data" in html_out
@@ -155,7 +155,7 @@ def test_render_calendar_grid_empty():
 
 
 def test_render_sparkline():
-    from glance.dashboard.charts import render_sparkline
+    from glancely.dashboard.charts import render_sparkline
 
     html_out = render_sparkline([3, 7, 5, 9, 6, 8, 7], width=200, height=40)
     assert "<svg" in html_out
@@ -164,21 +164,21 @@ def test_render_sparkline():
 
 
 def test_render_sparkline_single_value():
-    from glance.dashboard.charts import render_sparkline
+    from glancely.dashboard.charts import render_sparkline
 
     html_out = render_sparkline([5], width=200, height=40)
     assert "<svg" in html_out
 
 
 def test_render_sparkline_empty():
-    from glance.dashboard.charts import render_sparkline
+    from glancely.dashboard.charts import render_sparkline
 
     html_out = render_sparkline([], width=200, height=40)
     assert html_out == ""
 
 
 def test_render_pie_chart():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
 
     data = [
         {"label": "prod", "value": 240},
@@ -192,7 +192,7 @@ def test_render_pie_chart():
 
 
 def test_render_donut_chart():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
 
     data = [{"label": "prod", "value": 240}, {"label": "admin", "value": 72}]
     html_out = render_pie_donut(data, label_field="label", value_field="value", donut=True)
@@ -201,14 +201,14 @@ def test_render_donut_chart():
 
 
 def test_render_pie_donut_empty():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
 
     html_out = render_pie_donut([], label_field="x", value_field="y")
     assert "No data" in html_out
 
 
 def test_render_pie_donut_zero_total():
-    from glance.dashboard.charts import render_pie_donut
+    from glancely.dashboard.charts import render_pie_donut
 
     data = [{"label": "a", "value": 0}, {"label": "b", "value": 0}]
     html_out = render_pie_donut(data, label_field="label", value_field="value")
@@ -221,7 +221,7 @@ def test_render_pie_donut_zero_total():
 
 
 def test_render_progress_bar():
-    from glance.dashboard.charts import render_progress_bar
+    from glancely.dashboard.charts import render_progress_bar
 
     html_out = render_progress_bar(current=7, max_value=10, label="Done")
     assert "width:70%" in html_out
@@ -230,14 +230,14 @@ def test_render_progress_bar():
 
 
 def test_render_progress_bar_zero_max():
-    from glance.dashboard.charts import render_progress_bar
+    from glancely.dashboard.charts import render_progress_bar
 
     html_out = render_progress_bar(current=0, max_value=0, label="N/A")
     assert "width:0%" in html_out
 
 
 def test_render_status_card_ok():
-    from glance.dashboard.charts import render_status_card
+    from glancely.dashboard.charts import render_status_card
 
     html_out = render_status_card(
         title="Today's MIT",
@@ -250,7 +250,7 @@ def test_render_status_card_ok():
 
 
 def test_render_status_card_incomplete():
-    from glance.dashboard.charts import render_status_card
+    from glancely.dashboard.charts import render_status_card
 
     html_out = render_status_card(
         title="Today's MIT",
@@ -262,7 +262,7 @@ def test_render_status_card_incomplete():
 
 
 def test_render_bar_chart():
-    from glance.dashboard.charts import render_bar_chart
+    from glancely.dashboard.charts import render_bar_chart
 
     data = [{"label": "prod", "value": 240}, {"label": "admin", "value": 72}]
     html_out = render_bar_chart(data, label_field="label", value_field="value")
@@ -271,14 +271,14 @@ def test_render_bar_chart():
 
 
 def test_render_bar_chart_empty():
-    from glance.dashboard.charts import render_bar_chart
+    from glancely.dashboard.charts import render_bar_chart
 
     html_out = render_bar_chart([], label_field="x", value_field="y")
     assert "No data" in html_out or "no data" in html_out
 
 
 def test_render_timeline():
-    from glance.dashboard.charts import render_timeline
+    from glancely.dashboard.charts import render_timeline
 
     events = [
         {"time": "14:30", "title": "Wrapper refactor"},
@@ -295,7 +295,7 @@ def test_render_timeline():
 
 
 def test_load_chart_config_returns_none_for_missing_file(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
 
     comp_dir = tmp_path / "no_config"
     comp_dir.mkdir()
@@ -304,7 +304,7 @@ def test_load_chart_config_returns_none_for_missing_file(tmp_path):
 
 
 def test_load_chart_config_parses_valid_heatmap(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
 
     comp_dir = tmp_path / "valid_heatmap"
     comp_dir.mkdir()
@@ -338,7 +338,7 @@ suffix = "/10"
 
 
 def test_load_chart_config_rejects_invalid_type(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
 
     comp_dir = tmp_path / "invalid"
     comp_dir.mkdir()
@@ -353,7 +353,7 @@ source = "rows"
 
 
 def test_load_chart_config_missing_data_section(tmp_path):
-    from glance.dashboard.load_chart_config import load_chart_config
+    from glancely.dashboard.load_chart_config import load_chart_config
 
     comp_dir = tmp_path / "no_data"
     comp_dir.mkdir()

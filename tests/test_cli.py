@@ -1,29 +1,29 @@
-"""Smoke tests for glance CLI."""
+"""Smoke tests for glancely CLI."""
 
 import json
 import sys
 
 
-def test_glance_version():
-    from glance import __version__
+def test_glancely_version():
+    from glancely import __version__
 
     assert __version__ is not None
 
 
-def test_glance_help():
-    from glance.cli import main
+def test_glancely_help():
+    from glancely.cli import main
 
     rc = main(["help"])
     assert rc == 0
 
 
-def test_glance_list_no_components(tmp_path, monkeypatch):
+def test_glancely_list_no_components(tmp_path, monkeypatch):
     """list should return empty when no components exist."""
     monkeypatch.setenv("GLANCE_HOME", str(tmp_path))
 
     import io
 
-    from glance.cli import cmd_list
+    from glancely.cli import cmd_list
 
     saved = sys.stdout
     sys.stdout = io.StringIO()
