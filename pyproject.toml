@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glancely"
-version = "0.2.0"
+version = "0.3.0"
 description = "All-in-one personal tracker (diary, mood, reminders, MIT) as a single openclaw skill bundle. One dashboard, chat-driven, scaffolder for new components."
 readme = "README.md"
 license = {file = "LICENSE"}

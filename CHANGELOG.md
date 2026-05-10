@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+
+## 0.3.0 (2026-05-10)
+
+- Dashboard overhaul: every tracker defaults to a date-grid visualization
+- New trackers auto-infer chart type: numeric fields → heatmap, text/bool → calendar_grid
+- Mood: changed to calendar_grid for glance-friendly daily view
+- MIT: changed to calendar_grid showing 90-day completion history
+- Scaffold template includes `_presence` marker for text-only trackers
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]

@@ -3,15 +3,13 @@ name: glancely
 description: >
   Personal tracker framework. Scaffold new habit/workout/mood/reminder
   trackers from natural language. Dashboard, cron, all in one skill.
-version: 0.2.0
+version: 0.3.0
 metadata:
   openclaw:
     requires:
-      bins: [python3, pip]
+      bins: [python3]
+      anyBins: [pip, pip3]
     os: [macos, linux]
-    install:
-      - kind: pip
-        package: glancely
     envVars:
       - name: GLANCE_HOME
         required: false
@@ -48,7 +46,7 @@ When a user asks for something, follow this dispatch table:
 ## Setup
 
 If `glancely` CLI is missing or `~/.glancely/` does not exist:
-1. Run `pip install glancely`
+1. Install the package: `pip3 install glancely` (or `pip install glancely` if pip3 isn't available; use `pipx install glancely` on macOS Homebrew/PEP 668 systems)
 2. Run `glancely setup` (minimal init — migrations only)
 3. If user wants cron, ask for agent_id / session info and write `~/.glancely/openclaw.toml`
 
