@@ -1,7 +1,7 @@
-# Mood component — heatmap of mood scores over time
+# Mood component — calendar grid showing daily mood scores
 [chart]
-type = "heatmap"
-title = "Mood Heatmap"
+type = "calendar_grid"
+title = "Mood"
 
 [chart.data]
 source = "rows"
@@ -10,7 +10,7 @@ value_field = "mood_score"
 label_field = "mood_label"
 
 [chart.options]
-color_scheme = "green"
+color_scheme = "blue"
 
 [overview]
 enabled = true
