@@ -125,6 +125,13 @@ def build_mapping(args, fields: list[tuple[str, str]]) -> dict:
             'command  = "python3 scripts/notify.py"\n'
             f'description = "{title} reminder"\n'
         )
+    inferred = _infer_chart_type(fields) if args.chart_type == "auto" else args.chart_type
+    first_numeric = "_presence"
+    for fn, ft in fields:
+        if ft.lower() in NUMERIC_FIELD_TYPES:
+            first_numeric = fn
+            break
+    color_scheme = "green" if inferred == "heatmap" else "blue"
     return {
         "name": name,
         "title": title,
@@ -132,7 +139,9 @@ def build_mapping(args, fields: list[tuple[str, str]]) -> dict:
         "description": args.description or f"{title} tracking.",
         "order": args.order or _next_panel_order(),
         "freshness_hours": args.freshness_hours,
-        "chart_type": _infer_chart_type(fields) if args.chart_type == "auto" else args.chart_type,
+        "chart_type": inferred,
+        "first_numeric": first_numeric,
+        "color_scheme": color_scheme,
         "cron_block": cron_block,
         "fields_sql": fields_sql,
         "fields_doc": fields_doc,

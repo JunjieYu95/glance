@@ -4,11 +4,12 @@ type = "{{chart_type}}"
 title = "{{title}}"
 
 [chart.data]
-source = "summary"
-value_field = "total"
-label_field = "name"
+source = "rows"
+date_field = "created_at"
+value_field = "{{first_numeric}}"
 
 [chart.options]
+color_scheme = "{{color_scheme}}"
 
 [overview]
 enabled = true
