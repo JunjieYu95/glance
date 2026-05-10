@@ -48,6 +48,18 @@ FIELD_TYPE_TO_SQL = {
     "bool": "INTEGER",
 }
 
+NUMERIC_FIELD_TYPES = frozenset({"int", "integer", "float", "real"})
+
+
+def _infer_chart_type(fields: list[tuple[str, str]]) -> str:
+    """Pick heatmap for numeric trackers, calendar_grid for text/bool."""
+    if not fields:
+        return "calendar_grid"
+    for _name, ftype in fields:
+        if ftype.lower() in NUMERIC_FIELD_TYPES:
+            return "heatmap"
+    return "calendar_grid"
+
 NAME_RE = re.compile(r"^[a-z][a-z0-9_]{1,40}$")
 
 
@@ -120,7 +132,7 @@ def build_mapping(args, fields: list[tuple[str, str]]) -> dict:
         "description": args.description or f"{title} tracking.",
         "order": args.order or _next_panel_order(),
         "freshness_hours": args.freshness_hours,
-        "chart_type": args.chart_type,
+        "chart_type": _infer_chart_type(fields) if args.chart_type == "auto" else args.chart_type,
         "cron_block": cron_block,
         "fields_sql": fields_sql,
         "fields_doc": fields_doc,
@@ -212,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--cron-tz", default="America/Denver", dest="cron_tz")
     p.add_argument("--notify", help="Notification text (only used if --cron set)")
     p.add_argument("--force", action="store_true")
-    p.add_argument("--chart-type", default="bar", dest="chart_type",
+    p.add_argument("--chart-type", default="auto", dest="chart_type",
                    help="Chart type for dashboard (bar, pie, donut, heatmap, sparkline, status_card, progress_bar, calendar_grid, timeline)")
     args = p.parse_args(argv)
 
