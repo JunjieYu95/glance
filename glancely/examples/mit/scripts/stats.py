@@ -25,14 +25,14 @@ def build_stats() -> dict:
         today_row = conn.execute(
             "SELECT date, task, completed FROM mit_entries WHERE date = ?", (today,)
         ).fetchone()
-        last7 = list(conn.execute(
+        last90 = list(conn.execute(
             "SELECT date, task, completed FROM mit_entries "
-            "WHERE date >= date('now','-7 days') ORDER BY date DESC"
+            "WHERE date >= date('now','-90 days') ORDER BY date DESC"
         ))
-        completed_7d = sum(1 for r in last7 if r["completed"])
-        recent = [dict(r) for r in last7[:10]]
+        completed_7d = sum(1 for r in last90[:7] if r["completed"])
+        recent = [dict(r) for r in last90[:10]]
 
-    last_dt = datetime.fromisoformat(last7[0]["date"]) if last7 else None
+    last_dt = datetime.fromisoformat(last90[0]["date"]) if last90 else None
     freshness_hours = (
         round((datetime.utcnow() - last_dt).total_seconds() / 3600.0, 2)
         if last_dt else None
@@ -45,8 +45,8 @@ def build_stats() -> dict:
             "today_task": today_row["task"] if today_row else None,
             "today_completed": bool(today_row["completed"]) if today_row else None,
             "completed_last_7d": completed_7d,
-            "logged_last_7d": len(last7),
-            "completion_rate_7d": round(completed_7d / len(last7) * 100, 1) if last7 else 0,
+            "logged_last_7d": len(last90),
+            "completion_rate_7d": round(completed_7d / len(last90[:7]) * 100, 1) if last90 else 0,
         },
         "rows": recent,
     }

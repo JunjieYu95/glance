@@ -1,14 +1,19 @@
-# MIT component — status card showing today's task and completion
+# MIT component — calendar grid showing completed/incomplete days
 [chart]
-type = "status_card"
-title = "Today's MIT"
+type = "calendar_grid"
+title = "MIT"
+
+[chart.data]
+source = "rows"
+date_field = "date"
+value_field = "completed"
 
 [chart.options]
-status_field = "today_task"
-label = "Task"
+color_scheme = "green"
 
 [overview]
 enabled = true
 card_type = "stat"
-label = "MIT"
-data_key = "summary.today_task"
+label = "Completion"
+data_key = "summary.completion_rate_7d"
+suffix = "%"
