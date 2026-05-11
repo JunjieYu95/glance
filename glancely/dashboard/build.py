@@ -831,6 +831,58 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
 """
 
 
+def _render_reminders_from_db() -> str:
+    """Read reminders directly from the DB and render as a sidebar panel."""
+    import html as html_mod
+    try:
+        from glancely.core.storage import get_connection
+        conn = get_connection()
+        rows = [dict(r) for r in conn.execute(
+            "SELECT title, due_date, status FROM reminders WHERE status != 'done' ORDER BY due_date ASC NULLS LAST"
+        ).fetchall()]
+        conn.close()
+    except Exception:
+        return ""
+
+    if not rows:
+        return ""
+
+    groups = {"today": [], "soon": [], "later": [], "unscheduled": []}
+    from datetime import date
+    today = date.today().isoformat()
+    for r in rows:
+        due = r.get("due_date", "")
+        if due and str(due)[:10] == today:
+            groups["today"].append(r)
+        elif due and str(due)[:10] <= (date.today().__str__()):
+            groups["soon"].append(r)
+        elif due:
+            groups["later"].append(r)
+        else:
+            groups["unscheduled"].append(r)
+
+    labels = {"today": "Today", "soon": "Overdue", "later": "Later", "unscheduled": "Unscheduled"}
+    colors = {"today": "amber", "soon": "rose", "later": "blue", "unscheduled": "muted"}
+
+    html_parts = ['<section class="panel reminder-panel"><div class="panel-head"><h2>Reminders</h2></div>']
+    for bucket in ["today", "soon", "later", "unscheduled"]:
+        items = groups[bucket]
+        if not items:
+            continue
+        html_parts.append(f'<div class="reminder-group {bucket}">'
+                         f'<div class="reminder-group-head">{labels[bucket]}'
+                         f'<span class="count">{len(items)}</span></div>')
+        for item in items:
+            title = html_mod.escape(str(item.get("title", "")))
+            due_str = str(item.get("due_date", ""))[:10] if item.get("due_date") else ""
+            html_parts.append(f'<div class="reminder-item {bucket}">'
+                             f'<span class="reminder-title">{title}</span>'
+                             f'<span class="reminder-due">{due_str}</span></div>')
+        html_parts.append('</div>')
+    html_parts.append('</section>')
+    return "\n".join(html_parts)
+
+
 def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
     from glancely.core.storage.db import GLANCE_HOME
 
@@ -875,6 +927,10 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
     # Insert overview before the grid, reminder as sidebar
     if overview_html:
         panels_html.insert(0, overview_html)
+
+    # If no scaffolded reminder component, read reminders directly from DB
+    if not reminder_html:
+        reminder_html = _render_reminders_from_db()
 
     # If reminder panel exists, wrap main panels + reminder in a grid layout
     if reminder_html:
