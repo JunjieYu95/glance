@@ -435,6 +435,50 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
     .ov-sparkline svg { margin: 2px 0; }
     .ov-progress .ov-value { font-size: 14px; margin-top: 2px; }
 
+    /* ── Calendar Overview Grid ── */
+    .overview-grid-cal {
+      display: grid;
+      grid-template-columns: 90px repeat(var(--ov-days, 14), minmax(0, 1fr));
+      gap: 2px;
+      align-items: center;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .ov-day-label {
+      text-align: center;
+      color: var(--muted);
+      font-size: 10px;
+      padding: 2px 0;
+      line-height: 1.2;
+    }
+    .ov-row-label {
+      color: var(--ink);
+      font-weight: 500;
+      font-size: 11px;
+      text-align: right;
+      padding-right: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ov-header { color: var(--muted); font-size: 10px; }
+    .ov-cell {
+      min-height: 24px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .ov-cell.ov-empty { background: rgba(8, 13, 25, 0.5); }
+    .ov-cell.ov-heat { min-height: 20px; }
+    .ov-cell.ov-dot { min-height: 14px; border-radius: 50%; width: 14px; height: 14px; margin: auto; }
+    .ov-cell.ov-bar { align-items: flex-end; }
+    .ov-bar-fill { width: 100%; border-radius: 2px 2px 0 0; min-height: 2px; }
+    .ov-cell.ov-count { font-size: 10px; color: var(--ink); }
+
     /* ── Progress Bar ── */
     .chart-progress { margin: 8px 0; }
     .progress-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }

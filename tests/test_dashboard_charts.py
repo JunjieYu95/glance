@@ -14,7 +14,7 @@ def test_render_overview_panel_empty():
     from glancely.dashboard.overview import render_overview_panel
 
     html_out = render_overview_panel([])  # no components
-    assert isinstance(html_out, str)
+    assert html_out == ""  # empty string when no contributing components
 
 
 def test_render_overview_panel_with_components():
@@ -30,31 +30,21 @@ def test_render_overview_panel_with_components():
                 "label": "Mood",
                 "data_key": "summary.avg_score_7d",
                 "suffix": "/10",
+                "value_field": "mood_score",
             },
             "payload": {
                 "summary": {"avg_score_7d": 7.2},
-                "rows": [{"mood_score": 7}, {"mood_score": 8}, {"mood_score": 6}],
-            },
-        },
-        {
-            "name": "mit",
-            "title": "MIT",
-            "overview": {
-                "enabled": True,
-                "card_type": "stat",
-                "label": "Today's MIT",
-                "data_key": "summary.today_task",
-            },
-            "payload": {
-                "summary": {"today_task": "Design API", "today_completed": True},
-                "rows": [],
+                "rows": [
+                    {"created_at": "2026-05-08T10:00:00", "mood_score": 7},
+                    {"created_at": "2026-05-09T10:00:00", "mood_score": 8},
+                ],
             },
         },
     ]
-    html_out = render_overview_panel(components_meta)
+    html_out = render_overview_panel(components_meta, num_days=2)
+    assert "Last 2 Days" in html_out
+    assert "overview-grid-cal" in html_out
     assert "Mood" in html_out
-    assert "overview" in html_out
-    assert "Design API" in html_out or "MIT" in html_out
 
 
 def test_resolve_data_key_nested():
