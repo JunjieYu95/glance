@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from glance.core.storage import get_connection
+from glancely.core.storage import get_connection
 
 FIELDS = {{fields_python_list}}
 
