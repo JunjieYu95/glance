@@ -473,11 +473,20 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
       justify-content: center;
     }
     .ov-cell.ov-empty { background: rgba(8, 13, 25, 0.5); }
-    .ov-cell.ov-heat { min-height: 20px; }
-    .ov-cell.ov-dot { min-height: 14px; border-radius: 50%; width: 14px; height: 14px; margin: auto; }
-    .ov-cell.ov-bar { align-items: flex-end; }
-    .ov-bar-fill { width: 100%; border-radius: 2px 2px 0 0; min-height: 2px; }
-    .ov-cell.ov-count { font-size: 10px; color: var(--ink); }
+    .ov-cell.ov-num {
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ov-cell.ov-marker {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     /* ── Progress Bar ── */
     .chart-progress { margin: 8px 0; }
