@@ -33,8 +33,9 @@ def build_stats() -> dict:
         recent = [dict(r) for r in last90[:10]]
 
     last_dt = datetime.fromisoformat(last90[0]["date"]) if last90 else None
+    from datetime import timezone
     freshness_hours = (
-        round((datetime.utcnow() - last_dt).total_seconds() / 3600.0, 2)
+        round((datetime.now(timezone.utc) - last_dt).total_seconds() / 3600.0, 2)
         if last_dt else None
     )
 

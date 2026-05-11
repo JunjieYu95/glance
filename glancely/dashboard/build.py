@@ -102,6 +102,53 @@ def _render_rows(rows: list[dict]) -> str:
     return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
 
 
+def _render_reminder_panel(payload: dict) -> str:
+    """Render reminder component as a grouped sidebar panel."""
+    import html as html_mod
+    rows = payload.get("rows", [])
+    if not rows:
+        return ""
+
+    # Group reminders by bucket
+    groups: dict[str, list[dict]] = {"overdue": [], "today": [], "soon": [], "later": [], "unscheduled": []}
+    bucket_labels = {"overdue": "Overdue", "today": "Today", "soon": "Soon", "later": "Later", "unscheduled": "Unscheduled"}
+    now_iso = __import__("datetime").datetime.now().isoformat()
+
+    for r in rows:
+        due = r.get("due_date")
+        if due and due <= now_iso and r.get("status") != "done":
+            groups["overdue"].append(r)
+        elif due and due[:10] == now_iso[:10]:
+            groups["today"].append(r)
+        elif due:
+            groups["later"].append(r)
+        else:
+            groups["unscheduled"].append(r)
+
+    html_parts = ['<section class="panel reminder-panel"><header><h2>Reminders</h2></header>']
+    for bucket, items in groups.items():
+        if not items:
+            continue
+        count = len(items)
+        html_parts.append(
+            f'<div class="reminder-group {bucket}">'
+            f'<div class="reminder-group-head">{bucket_labels[bucket]}'
+            f'<span class="count">{count}</span></div>'
+        )
+        for item in items:
+            title = html_mod.escape(str(item.get("title", "")))
+            due_str = item.get("due_date", "")[:10] if item.get("due_date") else ""
+            html_parts.append(
+                f'<div class="reminder-item {bucket}">'
+                f'<span class="reminder-title">{title}</span>'
+                f'<span class="reminder-due">{due_str}</span>'
+                f'</div>'
+            )
+        html_parts.append('</div>')
+    html_parts.append('</section>')
+    return "\n".join(html_parts)
+
+
 def _render_panel(component, payload: dict) -> str:
     badge = _status_badge(
         payload.get("status", "ok"),
@@ -244,6 +291,28 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
       gap: 10px;
       position: relative;
       z-index: 1;
+    }
+    /* Dashboard grid with sidebar */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 7fr 3fr;
+      gap: 10px;
+      align-items: start;
+    }
+    .dashboard-main {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 10px;
+    }
+    .dashboard-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
     }
     .grid {
       display: grid;
@@ -713,13 +782,19 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
     components = discover_components(panel_only=True)
 
     panels_html: list[str] = []
+    reminder_html: str = ""
     statuses: dict[str, str] = {}
     overview_meta: list[dict] = []  # NEW: collect for overview panel
 
     for comp in components:
         payload = _run_stats(comp)
         statuses[comp.name] = payload.get("status", "unknown")
-        panels_html.append(_render_panel(comp, payload))
+
+        # Render reminder component as sidebar
+        if comp.name == "reminder":
+            reminder_html = _render_reminder_panel(payload)
+        else:
+            panels_html.append(_render_panel(comp, payload))
 
         # Collect overview metadata if chart_config exists with overview section
         chart_config = comp.chart_config
@@ -736,15 +811,22 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
     # Render overview panel
     overview_html = render_overview_panel(overview_meta)
 
-    # Insert overview before the grid
+    # Insert overview before the grid, reminder as sidebar
     if overview_html:
         panels_html.insert(0, overview_html)
+
+    # If reminder panel exists, wrap main panels + reminder in a grid layout
+    if reminder_html:
+        main_html = '\n'.join(panels_html)
+        body_content = f'<div class="dashboard-grid"><div class="dashboard-main">{main_html}</div><aside class="dashboard-sidebar">{reminder_html}</aside></div>'
+    else:
+        body_content = '\n'.join(panels_html)
 
     template = (
         TEMPLATE_PATH.read_text(encoding="utf-8") if TEMPLATE_PATH.is_file() else DEFAULT_TEMPLATE
     )
     html_out = template.replace("{built_at}", datetime.now().strftime("%Y-%m-%d %H:%M"))
-    html_out = html_out.replace("{panels}", "\n".join(panels_html))
+    html_out = html_out.replace("{panels}", body_content)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html_out, encoding="utf-8")
