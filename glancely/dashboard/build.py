@@ -932,12 +932,12 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
     if not reminder_html:
         reminder_html = _render_reminders_from_db()
 
-    # If reminder panel exists, wrap main panels + reminder in a grid layout
+    # Always use dashboard grid layout for full-width display
+    main_html = '\n'.join(panels_html)
     if reminder_html:
-        main_html = '\n'.join(panels_html)
         body_content = f'<div class="dashboard-grid"><div class="dashboard-main">{main_html}</div><aside class="dashboard-sidebar">{reminder_html}</aside></div>'
     else:
-        body_content = '\n'.join(panels_html)
+        body_content = f'<div class="dashboard-main" style="grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));width:100%">{main_html}</div>'
 
     template = (
         TEMPLATE_PATH.read_text(encoding="utf-8") if TEMPLATE_PATH.is_file() else DEFAULT_TEMPLATE
