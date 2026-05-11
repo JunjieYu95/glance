@@ -921,23 +921,36 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
                 }
             )
 
-    # Render overview panel
+    # Layout panels like reference dashboard: overview+sidebar in grid-top, rest in grid-2
     overview_html = render_overview_panel(overview_meta)
-
-    # Insert overview before the grid, reminder as sidebar
-    if overview_html:
-        panels_html.insert(0, overview_html)
-
-    # If no scaffolded reminder component, read reminders directly from DB
     if not reminder_html:
         reminder_html = _render_reminders_from_db()
 
-    # Always use dashboard grid layout for full-width display
-    main_html = '\n'.join(panels_html)
-    if reminder_html:
-        body_content = f'<div class="dashboard-grid"><div class="dashboard-main">{main_html}</div><aside class="dashboard-sidebar">{reminder_html}</aside></div>'
+    # Separate overview from regular panels
+    regular_panels = [p for p in panels_html if 'overview-panel' not in p]
+    overview_only = [p for p in panels_html if 'overview-panel' in p]
+
+    if overview_only:
+        overview_block = overview_only[0]
+    elif overview_html:
+        overview_block = overview_html
+        regular_panels.insert(0, overview_html)
     else:
-        body_content = f'<div class="dashboard-main" style="width:100%">{main_html}</div>'
+        overview_block = ""
+
+    # Build grid-top: overview + sidebar
+    sidebar_block = reminder_html if reminder_html else ""
+    grid_top_html = ""
+    if overview_block or sidebar_block:
+        grid_top_html = f'<div class="grid-top">{overview_block}{sidebar_block}</div>'
+
+    # Build grid-2 for regular panels (pair them up)
+    grid2_panels = []
+    for i in range(0, len(regular_panels), 2):
+        pair = regular_panels[i:i+2]
+        grid2_panels.append(f'<div class="grid-2">{"".join(pair)}</div>')
+
+    body_content = grid_top_html + "".join(grid2_panels)
 
     template = (
         TEMPLATE_PATH.read_text(encoding="utf-8") if TEMPLATE_PATH.is_file() else DEFAULT_TEMPLATE
