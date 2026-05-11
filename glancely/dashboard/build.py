@@ -316,7 +316,7 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
       gap: 10px;
     }
     .grid-top {
@@ -937,7 +937,7 @@ def build(output_path: Path | None = None, run_migrations: bool = True) -> dict:
     if reminder_html:
         body_content = f'<div class="dashboard-grid"><div class="dashboard-main">{main_html}</div><aside class="dashboard-sidebar">{reminder_html}</aside></div>'
     else:
-        body_content = f'<div class="dashboard-main" style="grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));width:100%">{main_html}</div>'
+        body_content = f'<div class="dashboard-main" style="width:100%">{main_html}</div>'
 
     template = (
         TEMPLATE_PATH.read_text(encoding="utf-8") if TEMPLATE_PATH.is_file() else DEFAULT_TEMPLATE
