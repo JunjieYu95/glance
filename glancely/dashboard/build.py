@@ -147,55 +147,171 @@ def _render_panel(component, payload: dict) -> str:
 """.strip()
 
 
-DEFAULT_TEMPLATE = """<!doctype html>
+DEFAULT_TEMPLATE = r"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>glancely — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>glancely &mdash; Dashboard</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #fafafa; --fg: #222; --muted: #888;
-      --card: #fff; --line: #eee;
-      --ok: #4a7; --bad: #c44;
-      --chart-line: #ddd;
+      --bg: #050814;
+      --panel: rgba(10, 18, 32, 0.88);
+      --panel-2: rgba(13, 28, 47, 0.92);
+      --ink: #e5f4ff;
+      --muted: #8aa2b8;
+      --line: rgba(125, 211, 252, 0.18);
+      --green: #2dd4bf;
+      --amber: #f59e0b;
+      --rose: #fb7185;
+      --blue: #38bdf8;
+      --violet: #a78bfa;
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.36);
+      --glow: 0 0 24px rgba(56, 189, 248, 0.16);
+      --ok: #2dd4bf;
+      --bad: #fb7185;
+      --chart-line: rgba(125, 211, 252, 0.12);
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #111; --fg: #eee; --muted: #888;
-        --card: #1a1a1a; --line: #2a2a2a;
-        --chart-line: #333;
-      }
-    }
+    * { box-sizing: border-box; }
     body {
-      background: var(--bg); color: var(--fg);
-      font: 14px/1.5 -apple-system, system-ui, sans-serif;
-      margin: 0; padding: 24px;
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% -10%, rgba(56, 189, 248, 0.16), transparent 32%),
+        radial-gradient(circle at 86% 0%, rgba(167, 139, 250, 0.13), transparent 28%),
+        linear-gradient(180deg, #050814 0%, #08111f 44%, #050814 100%);
+      color: var(--ink);
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    h1 { margin: 0 0 4px; font-size: 20px; }
-    .built-at { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(125, 211, 252, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(125, 211, 252, 0.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent 76%);
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    .dashboard-header {
+      padding: 12px 20px 8px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 8, 20, 0.82);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(12px);
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .header-row h1 { margin: 0; font-size: 18px; letter-spacing: 0; }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .meta-sep { opacity: 0.5; }
+    .refresh-button {
+      border: 1px solid var(--line);
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--ink);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .refresh-button:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    /* ── Main Grid ── */
+    main {
+      padding: 10px 16px 18px;
+      display: grid;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
+      gap: 10px;
     }
+    .grid-top {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
+      gap: 10px;
+    }
+
+    /* ── Panels ── */
     .panel {
-      background: var(--card); border: 1px solid var(--line);
-      border-radius: 8px; padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      overflow: hidden;
+      position: relative;
+      backdrop-filter: blur(12px);
+    }
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-top: 1px solid rgba(125, 211, 252, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), var(--glow);
     }
     .panel header {
-      display: flex; justify-content: space-between;
-      align-items: baseline; margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
     }
-    .panel h2 { margin: 0; font-size: 16px; }
-    .summary div { margin: 2px 0; }
+    .panel h2 { margin: 0; font-size: 15px; letter-spacing: 0; }
+    .summary div { margin: 2px 0; color: var(--ink); }
+
+    /* ── Badges ── */
     .badge {
-      font-size: 11px; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.9);
       white-space: nowrap;
     }
-    .badge.ok { background: rgba(74,170,119,0.18); color: var(--ok); }
-    .badge.bad { background: rgba(204,68,68,0.18); color: var(--bad); }
-    .badge.muted { background: rgba(136,136,136,0.18); color: var(--muted); }
+    .badge.ok {
+      color: #99f6e4;
+      background: rgba(45, 212, 191, 0.12);
+      border-color: rgba(45, 212, 191, 0.38);
+    }
+    .badge.bad {
+      color: #fda4af;
+      background: rgba(251, 113, 133, 0.12);
+      border-color: rgba(251, 113, 133, 0.42);
+    }
+    .badge.muted {
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.9);
+      border-color: var(--line);
+    }
+
     details { margin-top: 8px; }
     details summary { cursor: pointer; color: var(--muted); }
     table {
@@ -216,43 +332,60 @@ DEFAULT_TEMPLATE = """<!doctype html>
     /* ── Overview Panel ── */
     .overview-panel {
       grid-column: 1 / -1;
-      border-color: var(--ok);
     }
     .overview-grid {
-      display: flex; flex-wrap: wrap;
-      gap: 12px; margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
     }
     .ov-card {
-      flex: 1 1 140px; min-width: 120px;
-      padding: 12px; border-radius: 6px;
-      background: rgba(128,128,128,0.06);
+      flex: 1 1 130px;
+      min-width: 110px;
+      padding: 10px;
+      border-radius: 6px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
       text-align: center;
     }
     .ov-label {
-      display: block; font-size: 11px;
-      color: var(--muted); margin-bottom: 4px;
-      text-transform: uppercase; letter-spacing: 0.5px;
+      display: block;
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
     .ov-value {
-      display: block; font-size: 18px;
-      font-weight: 600; margin-top: 4px;
+      display: block;
+      font-size: 18px;
+      font-weight: 650;
+      margin-top: 4px;
     }
-    .ov-badge-value { font-size: 14px; }
+    .ov-badge-value { font-size: 14px; font-weight: 600; }
+    .ov-sparkline svg { margin: 2px 0; }
+    .ov-progress .ov-value { font-size: 14px; margin-top: 2px; }
 
     /* ── Progress Bar ── */
     .chart-progress { margin: 8px 0; }
     .progress-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
     .progress-track {
-      height: 10px; background: var(--line);
-      border-radius: 5px; overflow: hidden; margin: 4px 0;
+      height: 10px;
+      background: rgba(8, 13, 25, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 4px 0;
     }
     .progress-fill {
-      height: 100%; border-radius: 5px;
-      transition: width 0.5s ease;
+      height: 100%;
+      border-radius: 5px;
     }
     .progress-value {
-      font-size: 12px; color: var(--muted);
-      display: block; text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      text-align: right;
     }
 
     /* ── Status Card ── */
@@ -263,46 +396,65 @@ DEFAULT_TEMPLATE = """<!doctype html>
     /* ── Bar Chart ── */
     .chart-bars { margin: 8px 0; }
     .bar-item {
-      display: flex; align-items: center;
-      gap: 8px; margin: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
     }
     .bar-label {
-      font-size: 12px; min-width: 60px;
-      text-align: right; color: var(--muted);
+      font-size: 12px;
+      min-width: 60px;
+      text-align: right;
+      color: var(--muted);
     }
     .bar-track {
-      flex: 1; height: 16px;
-      background: var(--line); border-radius: 4px;
+      flex: 1;
+      height: 16px;
+      background: rgba(8, 13, 25, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 4px;
       overflow: hidden;
     }
     .bar-fill {
-      height: 100%; border-radius: 4px;
-      min-width: 2px; transition: width 0.3s ease;
+      height: 100%;
+      border-radius: 4px;
+      min-width: 2px;
     }
     .bar-value {
-      font-size: 12px; min-width: 36px;
-      color: var(--fg); text-align: left;
+      font-size: 12px;
+      min-width: 36px;
+      color: var(--ink);
+      text-align: left;
     }
 
     /* ── Pie / Donut ── */
     .chart-pie-wrapper, .chart-donut-wrapper {
-      text-align: center; margin: 8px 0;
+      text-align: center;
+      margin: 8px 0;
     }
     .chart-pie, .chart-donut { display: inline-block; }
     .pie-slice-hit { cursor: pointer; }
     .donut-center-text {
-      font-size: 18px; font-weight: 600;
-      fill: var(--fg);
+      font-size: 18px;
+      font-weight: 600;
+      fill: var(--ink);
     }
     .chart-legend {
-      list-style: none; padding: 0; margin: 8px 0 0;
-      display: flex; flex-wrap: wrap;
-      gap: 6px 14px; justify-content: center;
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      justify-content: center;
       font-size: 12px;
     }
     .legend-swatch {
-      display: inline-block; width: 10px; height: 10px;
-      border-radius: 2px; margin-right: 4px;
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 4px;
       vertical-align: middle;
     }
 
@@ -311,44 +463,61 @@ DEFAULT_TEMPLATE = """<!doctype html>
 
     /* ── Heatmap ── */
     .chart-heatmap {
-      display: inline-block; margin: 8px 0; overflow-x: auto;
+      display: inline-block;
+      margin: 8px 0;
+      overflow-x: auto;
       max-width: 100%;
     }
     .hm-header-row {
-      display: flex; gap: 2px; margin-bottom: 2px;
+      display: flex;
+      gap: 2px;
+      margin-bottom: 2px;
       padding-left: 24px;
     }
     .hm-header {
-      width: 14px; font-size: 9px; color: var(--muted);
+      width: 14px;
+      font-size: 9px;
+      color: var(--muted);
       text-align: center;
     }
     .hm-row { display: flex; gap: 2px; margin: 1px 0; }
     .hm-cell {
-      width: 14px; height: 14px; border-radius: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
       position: relative;
     }
-    .hm-cell:hover { outline: 2px solid var(--fg); z-index: 1; }
+    .hm-cell:hover { outline: 2px solid var(--ink); z-index: 1; }
     .hm-empty { background: transparent; }
 
     /* ── Calendar Grid ── */
     .chart-calendar-grid { margin: 8px 0; }
     .cal-month { margin-bottom: 12px; }
     .cal-month-title {
-      font-size: 13px; font-weight: 600;
+      font-size: 13px;
+      font-weight: 600;
       margin-bottom: 4px;
     }
     .cal-dow-row, .cal-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 2px; max-width: 280px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      max-width: 280px;
     }
     .cal-dow {
-      font-size: 10px; color: var(--muted);
-      text-align: center; padding: 2px 0;
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      padding: 2px 0;
     }
     .cal-cell {
-      aspect-ratio: 1; border-radius: 4px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; cursor: default;
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: default;
     }
     .cal-empty, .cal-future { background: transparent; }
     .cal-no-data { background: var(--line); opacity: 0.3; }
@@ -357,36 +526,176 @@ DEFAULT_TEMPLATE = """<!doctype html>
 
     /* ── Timeline ── */
     .chart-timeline {
-      position: relative; margin: 8px 0;
+      position: relative;
+      margin: 8px 0;
       padding-left: 24px;
     }
     .chart-timeline::before {
-      content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px;
-      width: 2px; background: var(--line);
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--line);
     }
     .timeline-item {
-      position: relative; margin-bottom: 12px;
+      position: relative;
+      margin-bottom: 12px;
     }
     .timeline-dot {
-      position: absolute; left: -20px; top: 5px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--ok); border: 2px solid var(--card);
+      position: absolute;
+      left: -20px;
+      top: 5px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--panel);
     }
     .timeline-time {
-      font-size: 11px; color: var(--muted);
+      font-size: 11px;
+      color: var(--muted);
       margin-bottom: 2px;
     }
     .timeline-title { font-size: 13px; font-weight: 500; }
     .timeline-desc { font-size: 12px; color: var(--muted); }
 
+    /* ── Reminder Panel (sidebar) ── */
+    .reminder-group { display: grid; gap: 6px; }
+    .reminder-group-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .reminder-group-head:first-child { margin-top: 0; }
+    .reminder-group-head .count {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 8px;
+      line-height: 18px;
+    }
+    .reminder-group.overdue .reminder-group-head { color: var(--rose); }
+    .reminder-group.today .reminder-group-head { color: var(--amber); }
+    .reminder-group.soon .reminder-group-head { color: var(--amber); }
+    .reminder-group.later .reminder-group-head { color: var(--blue); }
+    .reminder-group.unscheduled .reminder-group-head { color: var(--muted); }
+    .reminder-item {
+      border-left: 3px solid var(--line);
+      padding: 4px 8px;
+      background: var(--panel-2);
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .reminder-item.overdue { border-left-color: var(--rose); background: rgba(251, 113, 133, 0.1); }
+    .reminder-item.today { border-left-color: var(--amber); background: rgba(245, 158, 11, 0.1); }
+    .reminder-item.soon { border-left-color: var(--amber); }
+    .reminder-item.later { border-left-color: var(--blue); }
+    .reminder-item.unscheduled { border-left-color: rgba(209, 209, 204, 0.5); }
+    .reminder-item .reminder-due {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .reminder-item .reminder-title { font-weight: 500; }
+
+    /* ── MIT Stats Row ── */
+    .mit-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .mit-stat {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 10px;
+      background: var(--panel-2);
+    }
+    .mit-stat .stat-num {
+      font-size: 20px;
+      font-weight: 650;
+      line-height: 1.15;
+    }
+    .mit-stat .stat-num.good { color: var(--green); }
+    .mit-stat .stat-num.warn { color: var(--amber); }
+    .mit-stat .stat-num.bad { color: var(--rose); }
+    .mit-stat .stat-label {
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .mit-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 6px;
+    }
+    .mit-day {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      background: var(--panel-2);
+    }
+    .mit-day.done {
+      border-color: rgba(45,212,191,0.38);
+      background: rgba(45,212,191,0.09);
+    }
+    .mit-day.open {
+      border-color: rgba(251,113,133,0.34);
+      background: rgba(251,113,133,0.1);
+    }
+    .mit-day .date {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
     /* ── Chart Container ── */
     .chart-container { margin-top: 4px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 980px) {
+      .dashboard-header, main { padding-left: 14px; padding-right: 14px; }
+      .grid-top { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .dashboard-header { padding: 8px 10px 6px; }
+      .header-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+      h1 { font-size: 16px; }
+      h2 { font-size: 14px; }
+      main { padding: 8px 10px 14px; gap: 8px; }
+      .panel { padding: 8px 10px; }
+      .mit-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+      .mit-stat .stat-num { font-size: 16px; }
+      .mit-strip { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); }
+    }
   </style>
 </head>
 <body>
-  <h1>glancely</h1>
-  <div class="built-at">Built {built_at}</div>
-  <div class="grid">{panels}</div>
+  <header class="dashboard-header">
+    <div class="header-row">
+      <div>
+        <h1>glancely</h1>
+        <div class="header-meta">
+          <span>Built {built_at}</span>
+        </div>
+      </div>
+      <button class="refresh-button" onclick="location.reload()">Refresh</button>
+    </div>
+  </header>
+  <main>
+    <div class="grid">{panels}</div>
+  </main>
 </body>
 </html>
 """
