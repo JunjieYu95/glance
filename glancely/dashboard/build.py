@@ -438,7 +438,7 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
     /* ── Overview Grid (matches reference dashboard) ── */
     .overview {
       display: grid;
-      grid-template-columns: 56px repeat(14, minmax(0, 1fr));
+      grid-template-columns: 56px repeat(var(--ov-days, 14), minmax(0, 1fr));
       gap: 3px;
       align-items: center;
     }

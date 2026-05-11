@@ -159,7 +159,7 @@ def render_overview_panel(components_meta: list[dict], num_days: int = 14) -> st
     return (
         '<section class="panel overview-panel">'
         '<div class="panel-head">'
-        '<h2>Last 14 Days</h2>'
+        f"<h2>Last {len(days)} Days</h2>"
         f'<span class="legend">{legend}</span>'
         '</div>'
         '<div class="overview">'
