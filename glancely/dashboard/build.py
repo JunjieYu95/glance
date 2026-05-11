@@ -435,81 +435,65 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
     .ov-sparkline svg { margin: 2px 0; }
     .ov-progress .ov-value { font-size: 14px; margin-top: 2px; }
 
-    /* ── Calendar Overview Grid ── */
-    .overview-grid-cal {
+    /* ── Overview Grid (matches reference dashboard) ── */
+    .overview {
       display: grid;
-      grid-template-columns: 90px repeat(var(--ov-days, 14), minmax(0, 1fr));
-      gap: 2px;
+      grid-template-columns: 56px repeat(14, minmax(0, 1fr));
+      gap: 3px;
       align-items: center;
-      font-size: 11px;
-      margin-top: 8px;
     }
-    .ov-day-label {
-      text-align: center;
-      color: var(--muted);
+    .overview .row-label {
       font-size: 10px;
-      padding: 2px 0;
-      line-height: 1.2;
-    }
-    .ov-row-label {
-      color: var(--ink);
-      font-weight: 500;
-      font-size: 11px;
-      text-align: right;
-      padding-right: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .ov-header { color: var(--muted); font-size: 10px; }
-    .ov-cell {
-      min-height: 24px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .ov-cell.ov-empty { background: rgba(8, 13, 25, 0.35); }
-    .ov-cell.ov-dot-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(8, 13, 25, 0.25);
-    }
-    .ov-dot { border-radius: 50%; }
-    .ov-cell.ov-bar-cell {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 2px 2px 0;
-      background: rgba(8, 13, 25, 0.25);
-    }
-    .ov-bar-num {
-      font-size: 8px;
       color: var(--muted);
-      line-height: 1;
-      margin-bottom: 1px;
+      text-align: right;
+      padding-right: 6px;
     }
-    .ov-bar-track {
-      width: 70%;
-      flex: 1;
-      background: rgba(8, 13, 25, 0.4);
-      border-radius: 2px 2px 0 0;
-      display: flex;
-      align-items: flex-end;
+    .overview .day-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.1;
     }
-    .ov-bar-fill { width: 100%; border-radius: 2px 2px 0 0; min-height: 1px; }
-    .ov-cell.ov-marker {
-      font-size: 14px;
-      font-weight: 700;
+    .overview .mood-cell {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(8, 13, 25, 0.25);
+      min-height: 18px;
+    }
+    .overview .mood-dot { border-radius: 50%; }
+    .overview .prod-cell {
+      height: 38px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .overview .prod-bar {
+      width: 70%;
+      min-height: 1px;
+      background: var(--green);
+      border-radius: 2px 2px 0 0;
+    }
+    .overview .prod-num {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .overview .mit-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 18px;
+    }
+    .overview .mit-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .overview .mit-dot.done { background: var(--green); }
+    .overview .mit-dot.open { background: var(--rose); }
+    .overview .mit-dot.absent {
+      background: transparent;
+      border: 1px dashed var(--line);
     }
 
     /* ── Progress Bar ── */
