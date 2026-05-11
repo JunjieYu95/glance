@@ -43,7 +43,7 @@ def test_render_overview_panel_with_components():
     ]
     html_out = render_overview_panel(components_meta, num_days=2)
     assert "Last 2 Days" in html_out
-    assert "overview-grid-cal" in html_out
+    assert 'class="overview"' in html_out
     assert "Mood" in html_out
 
 
