@@ -472,20 +472,44 @@ DEFAULT_TEMPLATE = r"""<!doctype html>
       align-items: flex-end;
       justify-content: center;
     }
-    .ov-cell.ov-empty { background: rgba(8, 13, 25, 0.5); }
-    .ov-cell.ov-num {
-      font-size: 11px;
-      font-weight: 600;
+    .ov-cell.ov-empty { background: rgba(8, 13, 25, 0.35); }
+    .ov-cell.ov-dot-wrap {
       display: flex;
       align-items: center;
       justify-content: center;
+      background: rgba(8, 13, 25, 0.25);
     }
+    .ov-dot { border-radius: 50%; }
+    .ov-cell.ov-bar-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 2px 2px 0;
+      background: rgba(8, 13, 25, 0.25);
+    }
+    .ov-bar-num {
+      font-size: 8px;
+      color: var(--muted);
+      line-height: 1;
+      margin-bottom: 1px;
+    }
+    .ov-bar-track {
+      width: 70%;
+      flex: 1;
+      background: rgba(8, 13, 25, 0.4);
+      border-radius: 2px 2px 0 0;
+      display: flex;
+      align-items: flex-end;
+    }
+    .ov-bar-fill { width: 100%; border-radius: 2px 2px 0 0; min-height: 1px; }
     .ov-cell.ov-marker {
       font-size: 14px;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: rgba(8, 13, 25, 0.25);
     }
 
     /* ── Progress Bar ── */
